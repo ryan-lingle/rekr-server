@@ -2,12 +2,17 @@ const { GraphQLScalarType } = require('graphql');
 const { Kind } = require('graphql/language');
 const { AuthenticationError } = require('apollo-server-express');
 const Jwt = require("./auth/jwt")
+const { pubsub } = require('./pubsub');
 
 module.exports = {
   User: {
     podcasts: async (parent, _, { DB }) => {
       const Podcast = DB.podcast;
-      return Podcast.findAll({ where: { userId: parent.id }});
+      return await Podcast.findAll({ where: { userId: parent.id }});
+    },
+    reks: async (parent, _, { DB }) => {
+      const Rek = DB.rek;
+      return await Rek.findAll({ where: { userId: parent.id }});
     }
   },
   Podcast: {
@@ -26,21 +31,39 @@ module.exports = {
       return await Podcast.findByPk(parent.podcastId);
     }
   },
+  Rek: {
+    episode: async (parent, _, { DB }) => {
+      const Episode = DB.episode;
+      return await Episode.findByPk(parent.episodeId);
+    },
+    user: async (parent, _, { DB }) => {
+      const User = DB.user;
+      return await User.findByPk(parent.userId);
+    }
+  },
   Query: {
     parsePodcast: async ({ rssUrl }, { dataSources }) => {
       const { RssFeed } = dataSources;
       const feed = new RssFeed(rssUrl);
       return await feed.toPodcast()
     },
-    user: async  (_, __, { DB, id }) => {
+    currentUser: async (_, { DB, id }) => {
       const User = DB.user;
-      return await User.findByPk(id);
+      return await User.findByPk(id)
     },
-    episode: async (_, { id }, { DB }) => {
+    user: async  (args, { DB }) => {
+      const User = DB.user;
+      return await User.findOne({ where: args });
+    },
+    allUsers: async (__, { DB }) => {
+      const User = DB.user;
+      return await User.findAll()
+    },
+    episode: async ({ id }, { DB }) => {
       const Episode = DB.episode;
       return await Episode.findByPk(id);
     },
-    searchEpisodes: async (_, { term }, { DB }) => {
+    searchEpisodes: async ({ term }, { DB }) => {
       const Episode = DB.episode;
       return await Episode.search(term);
     }
@@ -68,12 +91,10 @@ module.exports = {
       const { getInvoice, subscribeInvoice } = dataSources.Lightning;
       const invoice = await getInvoice(satoshis);
       return await Rek.create({
-        episodeId,
-        satoshis,
+        episodeId, satoshis,
         invoice: invoice.request,
         invoiceId: invoice.id,
-        userId: id,
-        paid: false
+        userId: id, paid: false
       })
     },
     createUser: async (_, { email, username, password }, { DB }) => {
@@ -87,9 +108,9 @@ module.exports = {
       const User = DB.user;
       const user = await User.findOne({ where: { username }});
       if (!user) {
-        throw new AuthenticationError('Invalid Username or Password.');
+        throw new error('Invalid Username or Password.');
       } else if (!await user.validPassword(password)) {
-        throw new AuthenticationError('Invalid Username or Password.');
+        throw new error('Invalid Username or Password.');
       } else {
         const id = user.id;
         const token = Jwt.sign(id.toString());
@@ -100,25 +121,18 @@ module.exports = {
       const { ListenNotes } = dataSources;
       const Podcast = DB.podcast;
       const Episode = DB.episode;
+
       const itunesId = await ListenNotes.itunesIdByRss(rss);
       const userId = id;
       const podcast = await Podcast.create({
-        title,
-        description,
-        rss,
-        email,
-        website,
-        image,
-        itunesId,
-        userId
+        title, description, rss, email,
+        website, image, itunesId, userId
       });
 
       // create episodes
       episodes.forEach(episode => Episode.create({
-        podcastId: podcast.id,
-        title: episode.title,
-        description: episode.description,
-        released: episode.released
+        podcastId: podcast.id, title: episode.title,
+        description: episode.description, released: episode.released
       }))
 
       return podcast;
@@ -126,7 +140,10 @@ module.exports = {
   },
   Subscription: {
     invoicePaid: {
-      subscribe: () => pubsub.asyncIterator("INVOICE_PAID"),
+      resolve: ({ rek }) => {
+        return rek;
+      },
+      subscribe: () => pubsub.asyncIterator(["INVOICE_PAID"]),
     }
   }
 }

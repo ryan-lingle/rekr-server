@@ -27,7 +27,23 @@ module.exports = (sequelize, DataTypes) => {
   user.associate = function(models) {
     user.hasMany(models.podcast);
     user.hasMany(models.rek);
+    user.belongsToMany(user, {
+      through: models.follows,
+      as: 'followers',
+      foreignKey: 'followeeId',
+    });
+
+    user.belongsToMany(user, {
+      through: models.follows,
+      as: 'isFollowing',
+      foreignKey: 'followerId',
+    });
   };
+
+  user.prototype.follow = async function(followeeId) {
+    const Follows = sequelize.models.follows;
+    return await Follows.create({ followerId: this.id, followeeId })
+  }
 
   user.prototype.validPassword = async function(password) {
     return await bcrypt.compare(password, this.password);

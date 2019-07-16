@@ -1,12 +1,7 @@
 require('dotenv').config()
 const express = require('express');
 const { ApolloServer } = require('apollo-server-express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const { execute, subscribe } = require('graphql');
 const { createServer } = require('http');
-const { SubscriptionServer } = require('subscriptions-transport-ws');
-
 const typeDefs = require('./schema');
 
 const resolvers = require('./resolvers');
@@ -19,18 +14,17 @@ const Lightning = require('./datasources/lnd');
 
 const AuthDirective = require('./auth/auth_directive');
 
-const { pubsub } =require('./pubsub');
-
+const PORT = 4000;
+const app = express();
 
 const server = new ApolloServer({
   context: async ({ req, connection }) => {
     if (connection) {
-      return connection.context;
+      return { connection: connection.context, DB }
     } else {
       const { token, id } = req.headers;
       return { DB, token, id };
     }
-
   },
   typeDefs,
   resolvers,
@@ -45,9 +39,15 @@ const server = new ApolloServer({
   })
 });
 
-const app = express();
-server.applyMiddleware({ app });
+server.applyMiddleware({
+  app
+});
 
-app.listen({ port: 4000 }, () =>
-  console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
-);
+const httpServer = createServer(app);
+server.installSubscriptionHandlers(httpServer);
+
+
+httpServer.listen(PORT, () => {
+  console.log(`🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`);
+  console.log(`🚀 Subscriptions ready at ws://localhost:${PORT}${server.subscriptionsPath}`);
+});

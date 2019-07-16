@@ -11,6 +11,7 @@ const typeDefs = gql`
     email: String
     password: String
     podcasts: [Podcast]
+    reks: [Rek]
   }
 
   type Episode {
@@ -59,9 +60,11 @@ const typeDefs = gql`
 
   type Query {
     parsePodcast(rssUrl: String!): Podcast! @requireAuth
-    user: User!
-    episode(id: Int!): Episode!
-    searchEpisodes(term: String!): [Episode]
+    allUsers: [User] @requireAuth
+    currentUser: User! @requireAuth
+    user(username: String): User! @requireAuth
+    episode(id: Int!): Episode! @requireAuth
+    searchEpisodes(term: String!): [Episode] @requireAuth
   }
 
   type Mutation {
