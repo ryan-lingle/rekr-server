@@ -12,6 +12,9 @@ const typeDefs = gql`
     password: String
     podcasts: [Podcast]
     reks: [Rek]
+    followers: [User]
+    following: [User]
+    feed: [Rek]
   }
 
   type Episode {
@@ -30,11 +33,12 @@ const typeDefs = gql`
     email: String
     website: String
     image: String
-    itunesId: Int!
+    itunesId: Int
     episodes: [Episode]
   }
 
   type Rek {
+    id: Int!
     user: User!
     episode: Episode!
     satoshis: Int!

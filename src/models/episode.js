@@ -6,7 +6,14 @@ module.exports = (sequelize, DataTypes) => {
     image: DataTypes.STRING,
     podcastId: DataTypes.INTEGER,
     itunesId: DataTypes.INTEGER,
-  }, {});
+  }, {
+    hooks: {
+      beforeDestroy: async function(episode) {
+        const Rek = sequelize.models.rek;
+        await Rek.destroy({ where: { episodeId: episode.id } })
+      }
+    }
+  });
   episode.associate = function(models) {
     episode.belongsTo(models.podcast);
     episode.hasMany(models.rek);

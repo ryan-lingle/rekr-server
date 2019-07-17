@@ -8,10 +8,20 @@ module.exports = (sequelize, DataTypes) => {
     image: DataTypes.STRING,
     userId: DataTypes.INTEGER,
     itunesId: DataTypes.INTEGER,
-  }, {});
+  }, {
+    hooks: {
+      beforeDestroy: async function(podcast) {
+        const Episode = sequelize.models.episode;
+        await Episode.destroy({ where: { podcastId: podcast.id }, individualHooks: true })
+      }
+    }
+  });
 
   podcast.associate = function(models) {
-    podcast.hasMany(models.episode);
+    podcast.hasMany(models.episode, {
+      onDelete: 'cascade',
+      hooks: true,
+    });
     podcast.belongsTo(models.user)
   };
   return podcast;

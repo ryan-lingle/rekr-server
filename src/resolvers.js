@@ -13,6 +13,11 @@ module.exports = {
     reks: async (parent, _, { DB }) => {
       const Rek = DB.rek;
       return await Rek.findAll({ where: { userId: parent.id }});
+    },
+    feed: async (parent, _, { DB, id }) => {
+      const User = DB.user;
+      const user = await User.findByPk(parent.id);
+      return await user.getFeed();
     }
   },
   Podcast: {
@@ -41,8 +46,25 @@ module.exports = {
       return await User.findByPk(parent.userId);
     }
   },
+  Date: new GraphQLScalarType({
+    name: 'Date',
+    description: 'Date custom scalar type',
+    parseValue(value) {
+      return new Date(value); // value from the client
+    },
+    serialize(value) {
+      const date = new Date(value);
+      return date.toLocaleDateString({ month: "long", day: "numeric", year: "long" });
+    },
+    parseLiteral(ast) {
+      if (ast.kind === Kind.INT) {
+        return parseInt(ast.value, 10); // ast value is always in string format
+      }
+      return null;
+    },
+  }),
   Query: {
-    parsePodcast: async ({ rssUrl }, { dataSources }) => {
+    parsePodcast: async ({ rssUrl }, { dataSources, id }) => {
       const { RssFeed } = dataSources;
       const feed = new RssFeed(rssUrl);
       return await feed.toPodcast()
@@ -68,23 +90,6 @@ module.exports = {
       return await Episode.search(term);
     }
   },
-  Date: new GraphQLScalarType({
-    name: 'Date',
-    description: 'Date custom scalar type',
-    parseValue(value) {
-      return new Date(value); // value from the client
-    },
-    serialize(value) {
-      const date = new Date(value);
-      return date.toLocaleDateString({ month: "long", day: "numeric", year: "long" });
-    },
-    parseLiteral(ast) {
-      if (ast.kind === Kind.INT) {
-        return parseInt(ast.value, 10); // ast value is always in string format
-      }
-      return null;
-    },
-  }),
   Mutation: {
     createRek: async ({ episodeId, satoshis }, { DB, dataSources, id }) => {
       const Rek = DB.rek;
@@ -108,9 +113,9 @@ module.exports = {
       const User = DB.user;
       const user = await User.findOne({ where: { username }});
       if (!user) {
-        throw new error('Invalid Username or Password.');
+        throw new AuthenticationError('Invalid Username or Password.');
       } else if (!await user.validPassword(password)) {
-        throw new error('Invalid Username or Password.');
+        throw new AuthenticationError('Invalid Username or Password.');
       } else {
         const id = user.id;
         const token = Jwt.sign(id.toString());
