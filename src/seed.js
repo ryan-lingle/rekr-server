@@ -3,12 +3,12 @@ const RssFeed = require('./datasources/rss_feed');
 
 const users = [
   {
-    username: "ryan",
-    password: "tyryky",
-    email: "lingleryan@gmail.com"
+    username: "user",
+    password: "password",
+    email: "email@email.com"
   },
   {
-    username: "john",
+    username: "ryan",
     password: "password",
     email: "email@email.com"
   },
@@ -33,15 +33,15 @@ const Episode = db.episode;
 
 (async function() {
 
-  // await destroyItAll();
+  await destroyItAll();
 
-  // await createUsers();
+  await createUsers();
+
+  await createPodcast();
+
+  await createReks();
 
   await followEachOther();
-
-  // await createPodcast();
-
-  // await createReks();
 
 })()
 
