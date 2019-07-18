@@ -7,9 +7,6 @@ module.exports = (sequelize, DataTypes) => {
       validate: {
         async isUnique(val) {
           const { followerId, followeeId } = this;
-          if (followerId == followeeId) {
-            throw new Error('You Cannot Follow Yourself');
-          }
 
           const exists = await follows.findOne({ where: { followerId, followeeId } })
 

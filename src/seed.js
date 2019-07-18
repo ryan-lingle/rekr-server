@@ -37,7 +37,7 @@ const Episode = db.episode;
 
   // await createUsers();
 
-  // await followEachOther();
+  await followEachOther();
 
   // await createPodcast();
 

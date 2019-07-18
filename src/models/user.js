@@ -30,6 +30,9 @@ module.exports = (sequelize, DataTypes) => {
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(user.password, salt);
       },
+      afterCreate: async function(user) {
+        user.follow(user.id)
+      },
       beforeDestroy: async function(user) {
         const Podcast = sequelize.models.podcast;
         const Rek = sequelize.models.rek;
@@ -66,7 +69,7 @@ module.exports = (sequelize, DataTypes) => {
     const following = await this.following;
     const feed = [];
     const reks = await Promise.all(following.map(async user => {
-      return user.getReks()
+      return user.getReks({ where: { paid: true }})
     }))
     return reks.flat().sort((a, b) => b.satoshis - a.satoshis);
   }

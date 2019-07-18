@@ -12,7 +12,7 @@ module.exports = {
     },
     reks: async (parent, _, { DB }) => {
       const Rek = DB.rek;
-      return await Rek.findAll({ where: { userId: parent.id }});
+      return await Rek.findAll({ where: { userId: parent.id }, order: [['id', 'DESC']]});
     },
     feed: async (parent, _, { DB, id }) => {
       const User = DB.user;
