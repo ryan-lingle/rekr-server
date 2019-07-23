@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('reks', {
+    return queryInterface.createTable('rek_views', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -18,17 +18,7 @@ module.exports = {
         },
         allowNull: false
       },
-      episodeId: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: {
-            tableName: 'episodes',
-          },
-          key: 'id'
-        },
-        allowNull: false
-      },
-      parentId: {
+      rekId: {
         type: Sequelize.INTEGER,
         references: {
           model: {
@@ -36,15 +26,7 @@ module.exports = {
           },
           key: 'id'
         },
-      },
-      satoshis: {
-        type: Sequelize.INTEGER
-      },
-      invoice: {
-        type: Sequelize.TEXT
-      },
-      invoiceId: {
-        type: Sequelize.TEXT
+        allowNull: false
       },
       createdAt: {
         allowNull: false,
@@ -57,6 +39,6 @@ module.exports = {
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('reks');
+    return queryInterface.dropTable('rek_views');
   }
 };

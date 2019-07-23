@@ -5,6 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     description: DataTypes.TEXT,
     image: DataTypes.STRING,
     podcastId: DataTypes.INTEGER,
+    released: DataTypes.DATE,
     itunesId: DataTypes.INTEGER,
   }, {
     hooks: {
@@ -17,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
   episode.associate = function(models) {
     episode.belongsTo(models.podcast);
     episode.hasMany(models.rek);
+    episode.hasMany(models.bookmark);
   };
 
   episode.search = async function(term) {

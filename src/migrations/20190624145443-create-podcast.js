@@ -47,6 +47,10 @@ module.exports = {
         allowNull: false,
         isUrl: true,
       },
+      website: {
+        type: Sequelize.STRING,
+        isUrl: true,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

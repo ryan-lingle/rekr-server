@@ -28,6 +28,9 @@ module.exports = {
       description: {
         type: Sequelize.TEXT
       },
+      released: {
+        type: Sequelize.DATE
+      },
       image: {
         type: Sequelize.STRING,
         isUrl: true,

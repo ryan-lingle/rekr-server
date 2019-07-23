@@ -21,6 +21,56 @@ const users = [
     username: "jim",
     password: "password",
     email: "email@email.com"
+  },
+  {
+    username: "joe",
+    password: "password",
+    email: "email@email.com"
+  },
+  {
+    username: "bill",
+    password: "password",
+    email: "email@email.com"
+  },
+  {
+    username: "kanye",
+    password: "password",
+    email: "email@email.com"
+  },
+  {
+    username: "kim k",
+    password: "password",
+    email: "email@email.com"
+  },
+  {
+    username: "joel olsteen",
+    password: "password",
+    email: "email@email.com"
+  },
+  {
+    username: "jim",
+    password: "password",
+    email: "email@email.com"
+  },
+  {
+    username: "patrick collison",
+    password: "password",
+    email: "email@email.com"
+  },
+  {
+    username: "trump",
+    password: "password",
+    email: "email@email.com"
+  },
+  {
+    username: "josh",
+    password: "password",
+    email: "email@email.com"
+  },
+  {
+    username: "cool guy",
+    password: "password",
+    email: "email@email.com"
   }
 ]
 
@@ -118,13 +168,12 @@ async function createReks() {
   const _users = await User.findAll();
   User.findAll().then(users => {
     users.forEach(async (user) => {
-      for (let i=1;i<=10; i++) {
+      for (let i=1;i<=15; i++) {
         const episode = await Episode.findOne({ order: db.Sequelize.fn('RANDOM') })
         const rek = {
           episodeId: episode.id,
           satoshis: randomSats(),
           userId: user.id,
-          paid: true,
         }
 
         Rek.create(rek)

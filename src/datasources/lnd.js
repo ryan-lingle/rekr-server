@@ -8,29 +8,27 @@ const {lnd} = authenticatedLndGrpc({
   socket: 'btcpay464279.lndyn.com',
 });
 
-async function getInvoice(tokens) {
-  const { request, id } = await createInvoice({lnd, tokens});
-  subscribeInvoice(id)
-  return { request, id }
+async function getInvoice(satoshis, callback) {
+  const { request, id } = await createInvoice({lnd, tokens: satoshis });
+  subscribeInvoice({ request, id }, callback);
+  return request;
 }
 
-async function subscribeInvoice(invoiceId) {
+async function subscribeInvoice(invoice, callback) {
   const sub = subscribeToInvoices({lnd});
   sub.on('invoice_updated', readInvoice);
-  sub.on('error', (error) => {
+  sub.on('error', function(error) {
     console.log(error)
     if (error.code == 1) {
-      subscribeInvoice(invoiceId)
+      subscribeInvoice(invoice.id)
     }
   })
 
   async function readInvoice({ id }) {
-    if (id == invoiceId) {
+    if (id == invoice.id) {
       console.log("recieved!")
       sub.removeListener('invoice_updated', readInvoice)
-      Rek.update({ paid: true }, { where: { invoiceId }})
-      const rek = await Rek.findOne({ where: { invoiceId }})
-      pubsub.publish('INVOICE_PAID', { rek })
+      callback(invoice.request);
     }
   }
 }

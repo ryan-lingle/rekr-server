@@ -8,6 +8,9 @@ module.exports = (sequelize, DataTypes) => {
         async isUnique(val) {
           const { followerId, followeeId } = this;
 
+          if (followerId == followeeId) {
+            throw new Error('You Cannnot Follow Yourself!');
+          }
           const exists = await follows.findOne({ where: { followerId, followeeId } })
 
           if (exists) {

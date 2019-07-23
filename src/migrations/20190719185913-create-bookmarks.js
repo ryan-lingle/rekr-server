@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('reks', {
+    return queryInterface.createTable('bookmarks', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -28,24 +28,6 @@ module.exports = {
         },
         allowNull: false
       },
-      parentId: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: {
-            tableName: 'reks',
-          },
-          key: 'id'
-        },
-      },
-      satoshis: {
-        type: Sequelize.INTEGER
-      },
-      invoice: {
-        type: Sequelize.TEXT
-      },
-      invoiceId: {
-        type: Sequelize.TEXT
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -57,6 +39,6 @@ module.exports = {
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('reks');
+    return queryInterface.dropTable('bookmarks');
   }
 };

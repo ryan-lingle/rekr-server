@@ -7,6 +7,7 @@ module.exports = (sequelize, DataTypes) => {
     description: DataTypes.TEXT,
     image: DataTypes.STRING,
     userId: DataTypes.INTEGER,
+    website: DataTypes.STRING,
     itunesId: DataTypes.INTEGER,
   }, {
     hooks: {
