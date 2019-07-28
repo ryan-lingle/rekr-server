@@ -2,15 +2,40 @@
 module.exports = (sequelize, DataTypes) => {
   const podcast = sequelize.define('podcast', {
     title: DataTypes.STRING,
-    rss: DataTypes.STRING,
-    email: DataTypes.STRING,
+    rss: {
+      type: DataTypes.STRING,
+      validate: {
+        isUrl: true
+      }
+    },
+    email:  {
+      type: DataTypes.STRING,
+      validate: {
+        isEmail: true
+      }
+    },
+    slug: DataTypes.STRING,
     description: DataTypes.TEXT,
-    image: DataTypes.STRING,
+    image:  {
+      type: DataTypes.STRING,
+      validate: {
+        isUrl: true
+      }
+    },
     userId: DataTypes.INTEGER,
-    website: DataTypes.STRING,
+    website:  {
+      type: DataTypes.STRING,
+      validate: {
+        isUrl: true
+      }
+    },
     itunesId: DataTypes.INTEGER,
   }, {
     hooks: {
+      beforeCreate: async function(podcast) {
+        podcast.slug = slugify(podcast.title);
+      },
+
       beforeDestroy: async function(podcast) {
         const Episode = sequelize.models.episode;
         await Episode.destroy({ where: { podcastId: podcast.id }, individualHooks: true })
@@ -25,5 +50,10 @@ module.exports = (sequelize, DataTypes) => {
     });
     podcast.belongsTo(models.user)
   };
+
+  function slugify(title) {
+    return title.split(" ").join("_").toLowerCase();
+  }
+
   return podcast;
 };

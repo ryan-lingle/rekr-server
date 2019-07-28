@@ -4,15 +4,41 @@ const Sequelize = require("sequelize");
 
 module.exports = (sequelize, DataTypes) => {
   const user = sequelize.define('user', {
-    email: DataTypes.STRING,
+    email: {
+      type: DataTypes.STRING,
+      validate: {
+        isEmail: true,
+      }
+    },
     username: {
       type: DataTypes.STRING,
       validate: {
+        async isPresent(username) {
+          if (!username) {
+            throw new Error("username is not present")
+          }
+        },
+
         async isUnique(username) {
           const _user = await user.findOne({where: { username }});
           if (_user) {
             throw new Error('username must be unique.');
           }
+        },
+
+        async lessThan20Characters(username) {
+          if (username.length > 20) {
+            throw new Error('username cannot be greater than 20 characters')
+          }
+        },
+
+        async whiteListCharacter(username) {
+          const whitelisted = "qwertyuiopasdfghjklzxcvbnm?!_1234567890$"
+          username.split('').forEach(s => {
+            if (!whitelisted.includes(s.toLowerCase())) {
+              throw new Error(`username cannot contain ${s}`)
+            }
+          })
         }
       }
     },
@@ -26,7 +52,8 @@ module.exports = (sequelize, DataTypes) => {
         }
       }
     },
-    password: DataTypes.STRING
+    password: DataTypes.STRING,
+    profilePic: DataTypes.STRING,
   }, {
     getterMethods: {
       followers: async function() {
@@ -48,6 +75,7 @@ module.exports = (sequelize, DataTypes) => {
       beforeCreate: async function(user) {
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(user.password, salt);
+        if (!user.profilePic) user.profilePic = randomProfilePic();
       },
       beforeDestroy: async function(user) {
         const Podcast = sequelize.models.podcast;
@@ -91,7 +119,7 @@ module.exports = (sequelize, DataTypes) => {
           [Op.in]: ids
         }
       },
-      order: [['satoshis', 'DESC']],
+      order: [['valueGenerated', 'DESC']],
       offset,
       limit: 10,
     })
@@ -112,6 +140,11 @@ module.exports = (sequelize, DataTypes) => {
 
   user.prototype.validPassword = async function(password) {
     return await bcrypt.compare(password, this.password);
+  }
+
+  function randomProfilePic() {
+    const num = Math.floor((Math.random() * 4) + .99);
+    return `https://rekr-profile-pics.sfo2.digitaloceanspaces.com/default-${num}.png`;
   }
 
   return user;

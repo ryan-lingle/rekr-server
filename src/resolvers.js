@@ -72,9 +72,15 @@ module.exports = {
       const User = DB.user;
       return await User.findByPk(parent.userId);
     },
-    parent: async(parent, _, { DB }) => {
+    parents: async(parent, _, { DB }) => {
       const Rek = DB.rek;
-      return await Rek.findByPk(parent.parentId);
+      const rek = await Rek.findByPk(parent.id);
+      return await rek.getParents();
+    },
+    children: async(parent, _, { DB }) => {
+      const Rek = DB.rek;
+      const rek = await Rek.findByPk(parent.id);
+      return await rek.getChildren();
     }
   },
   Bookmark: {
@@ -148,11 +154,6 @@ module.exports = {
       const more = stream.length == 10;
       return { stream, more }
     },
-    parsePodcast: async ({ rssUrl }, { dataSources, id }) => {
-      const { RssFeed } = dataSources;
-      const feed = new RssFeed(rssUrl);
-      return await feed.toPodcast()
-    },
     currentUser: async (_, { DB, id }) => {
       const User = DB.user;
       return await User.findByPk(id)
@@ -172,9 +173,18 @@ module.exports = {
     searchEpisodes: async ({ term }, { DB }) => {
       const Episode = DB.episode;
       return await Episode.search(term);
+    },
+    podcast: async (args, { DB }) => {
+      const Podcast = DB.podcast;
+      return await Podcast.findOne({ where: args })
     }
   },
   Mutation: {
+    parsePodcast: async ({ rssUrl }, { dataSources, id }) => {
+      const { RssFeed } = dataSources;
+      const feed = new RssFeed(rssUrl);
+      return await feed.toPodcast()
+    },
     withdrawInvoice: async ({ satoshis }, { dataSources, id, DB }) => {
       const user = await DB.user.findByPk(id);
       const { getInvoice } = dataSources.Lightning;
@@ -203,10 +213,6 @@ module.exports = {
         episodeId,
         userId: id,
       }
-      console.log("wallet:")
-      console.log(walletSatoshis)
-      console.log("invoice:")
-      console.log(invoiceSatoshis)
 
       // remove wallet satoshis
       const User = DB.user;
@@ -221,6 +227,7 @@ module.exports = {
 
           rek.invoice = invoice;
           rek.satoshis = invoiceSatoshis + walletSatoshis;
+          rek.valueGenerated = rek.satoshis;
           await Rek.create(rek);
           pubsub.publish('INVOICE_PAID', { userId: id, invoice })
         });
@@ -239,24 +246,34 @@ module.exports = {
       const rek_view = await RekView.findOrCreate({ where: { rekId, userId: id } })
       return rek_view[0];
     },
+    updateUser: async (args, { DB, id, dataSources }) => {
+      const User = DB.user;
+      const { uploadFile } = dataSources.Images;
+      const { createReadStream } = await args.profilePic;
+      const stream = createReadStream();
+      const { Location } = await uploadFile(stream);
+
+      const user = await User.update({ profilePic: Location }, { where: { id }});
+      return await User.findByPk(id);
+    },
     createUser: async (_, { email, username, password }, { DB }) => {
       const User = DB.user;
       const user = await User.create({ email, username, password });
       const id = user.id;
       const token = Jwt.sign(id.toString());
-      return { id, token, username: user.username }
+      return { id, token, username: user.username, profilePic: user.profilePic }
     },
     logIn: async (_, { username, password }, { DB }) => {
       const User = DB.user;
       const user = await User.findOne({ where: { username }});
       if (!user) {
-        throw new error('Invalid Username or Password.');
+        throw new Error('Invalid Username or Password.');
       } else if (!await user.validPassword(password)) {
-        throw new error('Invalid Username or Password.');
+        throw new Error('Invalid Username or Password.');
       } else {
         const id = user.id;
         const token = Jwt.sign(id.toString());
-        return { id, token, username: user.username }
+        return { id, token, username: user.username, profilePic: user.profilePic }
       }
     },
     createPodcast: async ({ title,rss,description,email,website,image }, { dataSources, DB, id }) => {

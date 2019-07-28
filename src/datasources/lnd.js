@@ -20,7 +20,7 @@ async function subscribeInvoice(invoice, callback) {
   sub.on('error', function(error) {
     console.log(error)
     if (error.code == 1) {
-      subscribeInvoice(invoice.id)
+      subscribeInvoice(invoice, callback)
     }
   })
 

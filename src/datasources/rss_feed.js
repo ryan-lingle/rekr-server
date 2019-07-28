@@ -18,7 +18,7 @@ module.exports = class RssFeed {
       rss: this.url,
       description: feed.description,
       email: feed.itunes.owner.email,
-      image: feed.image.url,
+      image: feed.itunes.image,
       website: feed.link,
       episodes: this.episodeReducer(feed.items),
     }

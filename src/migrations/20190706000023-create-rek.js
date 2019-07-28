@@ -28,14 +28,10 @@ module.exports = {
         },
         allowNull: false
       },
-      parentId: {
+      valueGenerated: {
         type: Sequelize.INTEGER,
-        references: {
-          model: {
-            tableName: 'reks',
-          },
-          key: 'id'
-        },
+        allowNull: false,
+        defaultValue: 0,
       },
       satoshis: {
         type: Sequelize.INTEGER

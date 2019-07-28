@@ -6,14 +6,12 @@ const typeDefs = gql`
   scalar Date
 
   type UserStream {
-    lastId: Int!
     more: Boolean
     stream: [User]
     count: Int!
   }
 
   type RekStream {
-    lastId: Int
     more: Boolean
     stream: [Rek]
     count: Int!
@@ -33,6 +31,7 @@ const typeDefs = gql`
     username: String!
     email: String
     password: String
+    profilePic: String
     podcasts: [Podcast]
     reks: RekStream!
     bookmarks: BookmarkStream!
@@ -61,16 +60,19 @@ const typeDefs = gql`
     website: String
     image: String
     itunesId: Int
+    slug: String
     episodes: [Episode]
   }
 
   type Rek {
     id: Int!
     user: User!
-    parent: Rek
+    parents: [Rek]
+    children: [Rek]
     episode: Episode!
     satoshis: Int!
     invoice: String
+    valueGenerated: Int!
   }
 
   type RekView {
@@ -100,6 +102,7 @@ const typeDefs = gql`
     id: ID!
     token: String!
     username: String!
+    profilePic: String!
   }
 
   input EpisodeInput {
@@ -123,7 +126,6 @@ const typeDefs = gql`
   }
 
   type Query {
-    parsePodcast(rssUrl: String!): Podcast! @requireAuth
     allUsers: [User] @requireAuth
     currentUser: User! @requireAuth
     user(username: String): User! @requireAuth
@@ -132,9 +134,11 @@ const typeDefs = gql`
     reks(n: Int!, userId: Int, feed: Boolean): RekStream! @requireAuth
     users(n: Int!, userId: Int, followers: Boolean, following: Boolean): UserStream! @requireAuth
     bookmarks(n: Int!, userId: Int): BookmarkStream! @requireAuth
+    podcast(slug: String!): Podcast! @requireAuth
   }
 
   type Mutation {
+    parsePodcast(rssUrl: String!): Podcast! @requireAuth
     withdrawInvoice(satoshis: Int!): Invoice! @requireAuth
     toggleFollow(userId: Int!): Boolean! @requireAuth
     createRekView(rekId: Int!): RekView! @requireAuth
@@ -144,6 +148,7 @@ const typeDefs = gql`
     createPodcast(title: String, rss: String, description: String, email: String, website: String, image: String): Podcast! @requireAuth
     createEpisodes(episodes: [EpisodeInput], podcastId: String!): [Episode] @requireAuth
     createUser(email: String!, username: String!, password: String!): LogInResponse!
+    updateUser(email: String, username: String, password: String, profilePic: Upload): User! @requireAuth
     logIn(username: String!, password: String!): LogInResponse!
   }
 `;

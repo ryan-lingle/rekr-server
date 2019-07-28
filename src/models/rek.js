@@ -3,17 +3,18 @@ module.exports = (sequelize, DataTypes) => {
   const rek = sequelize.define('rek', {
     userId: DataTypes.INTEGER,
     episodeId: DataTypes.INTEGER,
-    parentId: DataTypes.INTEGER,
     satoshis: DataTypes.INTEGER,
     invoice: DataTypes.TEXT,
+    valueGenerated: DataTypes.INTEGER,
     invoiceId: DataTypes.TEXT,
   }, {
     hooks: {
       afterCreate: async function(rek) {
         const Rek = sequelize.models.rek;
         const RekView = sequelize.models.rek_view;
+        const RekRelationship = sequelize.models.rek_relationships;
 
-        const viewed = await RekView.findOne({
+        const views = await RekView.findAll({
           where: {
             userId: rek.userId,
           },
@@ -23,40 +24,68 @@ module.exports = (sequelize, DataTypes) => {
               episodeId: rek.episodeId,
             }
           }]
-        })
+        });
 
-        if (viewed) {
-          // update parent rek
-          const parentRek = await viewed.getRek();
-          rek.parentId = parentRek.id;
-          rek.save()
+        if (views.length > 0) {
+          views.forEach(async view => {
+            // update parent rek
+            const parentRek = await view.getRek();
 
-          // pay out og rekr
-          const rekr = await parentRek.getUser();
-          rekr.satoshis =+ Math.floor(rek.satoshis * .1);
-          rekr.save();
+            // update parent's "valueGenerated" | split value among the other views
+            updateValueGenerated(parentRek, (rek.satoshis / views.length));
 
+            await RekRelationship.create({ parentRekId: parentRek.id, childRekId: rek.id });
+
+            parentRek.valueGenerated = parentRek.valueGenerated + rek.satoshis;
+            parentRek.save();
+
+
+            // pay out og rekr
+            const rekr = await parentRek.getUser();
+            rekr.satoshis = rekr.satoshis + Math.floor(rek.satoshis * (.1 / views.length));
+            rekr.save();
+          })
           // pay out podcaster
           const episode = await rek.getEpisode();
           const podcast = await episode.getPodcast();
           const podcaster = await podcast.getUser();
-          podcaster.satoshis =+ Math.floor(rek.satoshis * .87);
+          podcaster.satoshis = podcaster.satoshis + Math.floor(rek.satoshis * .87);
           podcaster.save();
 
         } else {
           const episode = await rek.getEpisode();
           const podcast = await episode.getPodcast();
           const podcaster = await podcast.getUser();
-          podcaster.satoshis =+ Math.floor(rek.satoshis * .97);
+          podcaster.satoshis = podcaster.satoshis + Math.floor(rek.satoshis * .97);
           podcaster.save();
         }
       }
     }
   });
   rek.associate = function(models) {
-    rek.belongsTo(models.user)
-    rek.belongsTo(models.episode)
+    rek.belongsTo(models.user);
+    rek.belongsTo(models.episode);
+
+    rek.belongsToMany(rek, {
+      through: models.rek_relationships,
+      as: 'children',
+      foreignKey: 'parentRekId',
+    });
+
+    rek.belongsToMany(rek, {
+      through: models.rek_relationships,
+      as: 'parents',
+      foreignKey: 'childRekId',
+    });
   };
+
+  async function updateValueGenerated(rek, satoshis) {
+    rek.valueGenerated = rek.valueGenerated + satoshis;
+    rek.save();
+
+    const parents = await rek.getParents();
+    parents.forEach(parent => updateValueGenerated(parent, satoshis))
+  }
 
   return rek;
 };

@@ -3,74 +3,119 @@ const RssFeed = require('./datasources/rss_feed');
 
 const users = [
   {
-    username: "user",
+    username: "i_amm_nobody",
     password: "password",
-    email: "email@email.com"
+    email: "email@email.com",
+    profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/i_amm_nobody.jpg"
   },
   {
-    username: "ryan",
+    username: "PeterMcCormack",
     password: "password",
-    email: "email@email.com"
+    email: "email@email.com",
+    profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/PeterMcCormack.png"
   },
   {
-    username: "paul",
+    username: "bitstein",
     password: "password",
-    email: "email@email.com"
+    email: "email@email.com",
+    profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/bitstein.jpg"
   },
   {
-    username: "jim",
+    username: "pierre_rochard",
     password: "password",
-    email: "email@email.com"
+    email: "email@email.com",
+    profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/pierre_rochard.jpg"
   },
   {
-    username: "joe",
+    username: "MartyBent",
     password: "password",
-    email: "email@email.com"
+    email: "email@email.com",
+    profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/MartyBent.jpg"
   },
   {
-    username: "bill",
+    username: "matt_odell",
     password: "password",
-    email: "email@email.com"
+    email: "email@email.com",
+    profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/matt_odell.jpg"
   },
   {
-    username: "kanye",
+    username: "stephanlivera",
     password: "password",
-    email: "email@email.com"
+    email: "email@email.com",
+    profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/stephanlivera.jpg"
   },
   {
-    username: "kim k",
+    username: "joerogan",
     password: "password",
-    email: "email@email.com"
+    email: "email@email.com",
+    profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/joerogan.jpeg"
   },
   {
-    username: "joel olsteen",
+    username: "EricRWeinstein",
     password: "password",
-    email: "email@email.com"
+    email: "email@email.com",
+    profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/EricRWeinstein.jpg"
   },
   {
-    username: "jim",
+    username: "NickSzabo4",
     password: "password",
-    email: "email@email.com"
+    email: "email@email.com",
+    profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/NickSzabo4.jpg"
   },
   {
-    username: "patrick collison",
+    username: "lopp",
     password: "password",
-    email: "email@email.com"
+    email: "email@email.com",
+    profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/lopp.jpg"
   },
   {
-    username: "trump",
+    username: "TuurDemeester",
     password: "password",
-    email: "email@email.com"
+    email: "email@email.com",
+    profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/TuurDemeester.png"
   },
   {
-    username: "josh",
+    username: "naval",
     password: "password",
-    email: "email@email.com"
+    email: "email@email.com",
+    profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/naval.png"
   },
   {
-    username: "cool guy",
+    username: "brady",
     password: "password",
-    email: "email@email.com"
+    email: "email@email.com",
+    profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/brady.png"
+  }
+]
+
+const podcasts = [
+  {
+    rss: "http://feeds.soundcloud.com/users/soundcloud:users:343665466/sounds.rss",
+    owner: "bitstein"
+  },
+  {
+    rss: "https://feeds.simplecast.com/620_gQYv",
+    owner: "brady"
+  },
+  {
+    rss: "https://feeds.megaphone.fm/KM4602122913",
+    owner: "EricRWeinstein"
+  },
+  {
+    rss: "http://joeroganexp.joerogan.libsynpro.com/rss",
+    owner: "joerogan"
+  },
+  {
+    rss: "https://anchor.fm/s/558f520/podcast/rss",
+    owner: "MartyBent"
+  },
+  {
+    rss: "https://www.whatbitcoindid.com/podcast?format=RSS",
+    owner: "PeterMcCormack"
+  },
+  {
+    rss: "https://www.listennotes.com/c/r/9aa0e4180a0340768f58f357bff1243b",
+    owner: "stephanlivera"
   }
 ]
 
@@ -87,7 +132,7 @@ const Episode = db.episode;
 
   await createUsers();
 
-  await createPodcast();
+  await createPodcasts();
 
   await createReks();
 
@@ -120,70 +165,76 @@ async function destroyItAll() {
 
 async function createUsers() {
   console.log('Creating Users')
-  users.forEach(async (user) => {
+  for (const user of users) {
     await User.create(user)
-  })
+  }
 }
 
 async function followEachOther() {
   console.log('Users are following Each Other')
-  User.findAll().then(users => {
-    users.forEach((user) => {
-      users.forEach((_user_) => {
-        user.follow(_user_.id)
-      })
-    })
-  })
+  const users = await User.findAll();
+  for (const user of users) {
+    for (const _user_ of users) {
+      try {
+        await user.follow(_user_.id);
+      } catch(err) {
+        console.log(err)
+      }
+    }
+  }
 }
 
-// async function seeFollowers() {
-//   User.findAll().then(users => {
-//     console.log(user.getFollowers())
-//   })
-// }
+async function createPodcasts() {
+  for (const podcast of podcasts) {
+    await createPodcast(podcast)
+  }
+}
 
-async function createPodcast() {
-  console.log('Create a Podcast')
-  const feed = new RssFeed("http://feeds.soundcloud.com/users/soundcloud:users:343665466/sounds.rss");
+async function createPodcast(podcast) {
+  console.log('Creating a Podcast')
+  const feed = new RssFeed(podcast.rss);
   const {title, description, rss, email, website, image, episodes } = await feed.toPodcast();
-  const me = await User.findOne({ where: { username: "ryan" }});
-  const userId = me.id;
+  console.log(podcast.owner)
+  const owner = await User.findOne({ where: { username: podcast.owner }});
+  const userId = owner.id;
 
-  const podcast = await Podcast.create({
+  const _podcast_ = await Podcast.create({
     title, description, rss, email,
     website, image, userId
   });
 
   console.log('Creating Episodes')
-  episodes.forEach(async (episode) => {
+  for (const episode of episodes) {
     await Episode.create({
-      podcastId: podcast.id, title: episode.title,
+      podcastId: _podcast_.id, title: episode.title,
       description: episode.description, released: episode.released
     })
-  })
+  }
 }
 
 async function createReks() {
   console.log('Creating Reks')
-  const _users = await User.findAll();
-  User.findAll().then(users => {
-    users.forEach(async (user) => {
-      for (let i=1;i<=15; i++) {
-        const episode = await Episode.findOne({ order: db.Sequelize.fn('RANDOM') })
-        const rek = {
-          episodeId: episode.id,
-          satoshis: randomSats(),
-          userId: user.id,
-        }
+  const users = await User.findAll();
 
-        Rek.create(rek)
+  for (const user of users) {
+    for (let i=1;i<=15; i++) {
+      const podcast = await Podcast.findOne({ order: db.Sequelize.fn('RANDOM') })
+      const episode = await Episode.findOne({ order: db.Sequelize.fn('RANDOM'), where: { podcastId: podcast.id } })
+      const sats = randomSats();
+      const rek = {
+        episodeId: episode.id,
+        satoshis: sats,
+        userId: user.id,
+        valueGenerated: sats
       }
-    })
-  })
+
+      await Rek.create(rek)
+    }
+  }
 
 }
 
 function randomSats() {
-  return Math.floor(50 * Math.random()) + 50;
+  return Math.floor(10000 * Math.random());
 }
 

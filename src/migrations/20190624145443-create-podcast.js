@@ -38,6 +38,9 @@ module.exports = {
         allowNull: false,
         isEmail: true,
       },
+      slug: {
+        type: Sequelize.STRING
+      },
       description: {
         type: Sequelize.TEXT,
         allowNull: false,

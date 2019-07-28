@@ -1,34 +1,20 @@
 'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('users', {
+    return queryInterface.createTable('rek_relationships', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      satoshis: {
+      parentRekId: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        defaultValue: 0
       },
-      email: {
-        type: Sequelize.STRING,
+      childRekId: {
+        type: Sequelize.INTEGER,
         allowNull: false,
-        isEmail: true,
-      },
-      username: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        unique: true,
-      },
-      password: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      profilePic: {
-        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,
@@ -41,6 +27,6 @@ module.exports = {
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('users');
+    return queryInterface.dropTable('rek_relationships');
   }
 };
