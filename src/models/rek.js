@@ -77,6 +77,13 @@ module.exports = (sequelize, DataTypes) => {
       as: 'parents',
       foreignKey: 'childRekId',
     });
+
+    rek.belongsToMany(models.hashtag, {
+      through: models.tag,
+      as: 'hashtags',
+      foreignKey: 'rekId',
+    });
+
   };
 
   async function updateValueGenerated(rek, satoshis) {

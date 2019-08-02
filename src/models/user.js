@@ -142,6 +142,33 @@ module.exports = (sequelize, DataTypes) => {
     return await bcrypt.compare(password, this.password);
   }
 
+  user.search = async function({ term, offset }) {
+    const split = term.split(' ');
+    if (split.length > 1) {
+      return await sequelize.query(`
+        SELECT *
+        FROM ${this.tableName}
+        WHERE _search @@ plainto_tsquery('english', :term)
+        LIMIT 10
+        OFFSET :offset;
+      `, {
+        model: this,
+        replacements: { term, offset },
+      });
+    } else {
+      return await sequelize.query(`
+        SELECT *
+        FROM ${this.tableName}
+        WHERE _search @@ to_tsquery('english', :term)
+        LIMIT 10
+        OFFSET :offset;
+      `, {
+        model: this,
+        replacements: { term: term + ":*", offset },
+      });
+    };
+  }
+
   function randomProfilePic() {
     const num = Math.floor((Math.random() * 4) + .99);
     return `https://rekr-profile-pics.sfo2.digitaloceanspaces.com/default-${num}.png`;

@@ -51,6 +51,33 @@ module.exports = (sequelize, DataTypes) => {
     podcast.belongsTo(models.user)
   };
 
+  podcast.search = async function({ term, offset }) {
+    const split = term.split(' ');
+    if (split.length > 1) {
+      return await sequelize.query(`
+        SELECT *
+        FROM ${this.tableName}
+        WHERE _search @@ plainto_tsquery('english', :term)
+        LIMIT 10
+        OFFSET :offset;
+      `, {
+        model: this,
+        replacements: { term, offset },
+      });
+    } else {
+      return await sequelize.query(`
+        SELECT *
+        FROM ${this.tableName}
+        WHERE _search @@ to_tsquery('english', :term)
+        LIMIT 10
+        OFFSET :offset;
+      `, {
+        model: this,
+        replacements: { term: term + ":*", offset },
+      });
+    };
+  }
+
   function slugify(title) {
     return title.split(" ").join("_").toLowerCase();
   }

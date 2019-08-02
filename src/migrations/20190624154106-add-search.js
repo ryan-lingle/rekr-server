@@ -2,8 +2,9 @@
 const vectorName = '_search';
 
 const searchObjects = {
-  podcasts: ['title'],
-  episodes: ['title'],
+  podcasts: ['title', 'description'],
+  episodes: ['title', 'description'],
+  users: ['username']
 };
 
 module.exports = {

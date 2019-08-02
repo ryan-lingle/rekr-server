@@ -21,16 +21,31 @@ module.exports = (sequelize, DataTypes) => {
     episode.hasMany(models.bookmark);
   };
 
-  episode.search = async function(term) {
-    const searchResults = await sequelize.query(`
-      SELECT *
-      FROM ${this.tableName}
-      WHERE _search @@ plainto_tsquery('english', :query);
-    `, {
-      model: this,
-      replacements: { query: term },
-    });
-    return searchResults;
+  episode.search = async function({ term, offset }) {
+    const split = term.split(' ');
+    if (split.length > 1) {
+      return await sequelize.query(`
+        SELECT *
+        FROM ${this.tableName}
+        WHERE _search @@ plainto_tsquery('english', :term)
+        LIMIT 50
+        OFFSET :offset;
+      `, {
+        model: this,
+        replacements: { term, offset },
+      });
+    } else {
+      return await sequelize.query(`
+        SELECT *
+        FROM ${this.tableName}
+        WHERE _search @@ to_tsquery('english', :term)
+        LIMIT 50
+        OFFSET :offset;
+      `, {
+        model: this,
+        replacements: { term: term + ":*", offset },
+      });
+    };
   }
 
   return episode;

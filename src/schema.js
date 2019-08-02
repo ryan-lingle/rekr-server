@@ -18,9 +18,20 @@ const typeDefs = gql`
   }
 
   type BookmarkStream {
-    lastId: Int!
     more: Boolean
     stream: [Bookmark]
+    count: Int!
+  }
+
+  type EpisodeStream {
+    more: Boolean
+    stream: [Episode]
+    count: Int!
+  }
+
+  type PodcastStream {
+    more: Boolean
+    stream: [Podcast]
     count: Int!
   }
 
@@ -121,6 +132,12 @@ const typeDefs = gql`
     invoice: String!
   }
 
+  type SearchResults {
+    episode: EpisodeStream
+    podcast: PodcastStream
+    user: UserStream
+  }
+
   type Subscription {
     invoicePaid(invoice: String!): InvoicePaid!
   }
@@ -130,10 +147,10 @@ const typeDefs = gql`
     currentUser: User! @requireAuth
     user(username: String): User! @requireAuth
     episode(id: Int!): Episode! @requireAuth
-    searchEpisodes(term: String!): [Episode] @requireAuth
-    reks(n: Int!, userId: Int, feed: Boolean): RekStream! @requireAuth
-    users(n: Int!, userId: Int, followers: Boolean, following: Boolean): UserStream! @requireAuth
-    bookmarks(n: Int!, userId: Int): BookmarkStream! @requireAuth
+    search(term: String!, type: String!, n: Int): SearchResults @requireAuth
+    reks(n: Int!, userId: String, feed: Boolean): RekStream! @requireAuth
+    users(n: Int!, userId: String, followers: Boolean, following: Boolean): UserStream! @requireAuth
+    bookmarks(n: Int!, userId: String): BookmarkStream! @requireAuth
     podcast(slug: String!): Podcast! @requireAuth
   }
 

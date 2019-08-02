@@ -48,7 +48,7 @@ module.exports = {
         return parent.episodes;
       } else {
         const Episode = DB.episode;
-        return Episode.findAll({ where: { podcastId: parent.id }});
+        return Episode.findAll({ where: { podcastId: parent.id }, order: [['released', 'DESC']]});
       }
     }
   },
@@ -170,9 +170,14 @@ module.exports = {
       const Episode = DB.episode;
       return await Episode.findByPk(id);
     },
-    searchEpisodes: async ({ term }, { DB }) => {
-      const Episode = DB.episode;
-      return await Episode.search(term);
+    search: async ({ term, type, n }, { DB }) => {
+      const offset = n ? n * 10 : 0;
+      const Model = DB[type];
+      const stream = await Model.search({ term, offset });
+      const more = stream.length == 10;
+      const response = {};
+      response[type] = { stream, more };
+      return response;
     },
     podcast: async (args, { DB }) => {
       const Podcast = DB.podcast;
