@@ -57,15 +57,15 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     getterMethods: {
       followers: async function() {
-        const Follows = sequelize.models.follows;
-        const count = Follows.count({ where: { followeeId: this.id }})
+        const UserFollow = sequelize.models.user_follow;
+        const count = UserFollow.count({ where: { followeeId: this.id }})
         const stream = await this.getFollowers({ limit: 10 });
         const more = stream.length == 10;
         return { stream, more, count };
       },
       following: async function() {
-        const Follows = sequelize.models.follows;
-        const count = Follows.count({ where: { followerId: this.id }})
+        const UserFollow = sequelize.models.user_follow;
+        const count = UserFollow.count({ where: { followerId: this.id }})
         const stream = await this.getIsFollowing({ limit: 10 });
         const more = stream.length == 10;
         return { stream, more, count };
@@ -93,20 +93,27 @@ module.exports = (sequelize, DataTypes) => {
     user.hasMany(models.bookmark);
     user.hasMany(models.rek_view);
     user.belongsToMany(user, {
-      through: models.follows,
+      through: models.user_follow,
       as: 'followers',
       foreignKey: 'followeeId',
     });
 
     user.belongsToMany(user, {
-      through: models.follows,
+      through: models.user_follow,
       as: 'isFollowing',
+      foreignKey: 'followerId',
+    });
+
+    user.belongsToMany(models.hashtag, {
+      through: models.hashtag_follow,
+      as: 'followedHashtags',
       foreignKey: 'followerId',
     });
   };
 
   user.prototype.getFeed = async function({ offset }) {
     const Rek = sequelize.models.rek;
+    const RekView = sequelize.models.rek_view;
     const { Op } = Sequelize;
 
     const following = await this.following;
@@ -122,6 +129,10 @@ module.exports = (sequelize, DataTypes) => {
       order: [['valueGenerated', 'DESC']],
       offset,
       limit: 10,
+      include: [{
+        model: RekView,
+        order: [sequelize.fn(this.id, sequelize.col('userId'))]
+      }]
     })
     const len = stream.length;
     const more = len == 10;
@@ -129,13 +140,13 @@ module.exports = (sequelize, DataTypes) => {
   }
 
   user.prototype.follow = async function(followeeId) {
-    const Follows = sequelize.models.follows;
-    return await Follows.create({ followerId: this.id, followeeId })
+    const UserFollow = sequelize.models.user_follow;
+    return await UserFollow.create({ followerId: this.id, followeeId })
   }
 
   user.prototype.unfollow = async function(followeeId) {
-    const Follows = sequelize.models.follows;
-    return await Follows.desroy({ where: { followerId: this.id, followeeId }})
+    const UserFollow = sequelize.models.user_follow;
+    return await UserFollow.desroy({ where: { followerId: this.id, followeeId }})
   }
 
   user.prototype.validPassword = async function(password) {

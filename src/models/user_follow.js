@@ -1,6 +1,6 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
-  const follows = sequelize.define('follows', {
+  const user_follow = sequelize.define('user_follow', {
     followerId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
           if (followerId == followeeId) {
             throw new Error('You Cannnot Follow Yourself!');
           }
-          const exists = await follows.findOne({ where: { followerId, followeeId } })
+          const exists = await user_follow.findOne({ where: { followerId, followeeId } })
 
           if (exists) {
             throw new Error('Already following this User')
@@ -25,9 +25,9 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {});
 
-  follows.associate = function(models) {
+  user_follow.associate = function(models) {
     // associations can be defined here
   };
 
-  return follows;
+  return user_follow;
 };

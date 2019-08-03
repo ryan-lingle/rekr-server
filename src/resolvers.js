@@ -36,9 +36,12 @@ module.exports = {
       const RekView = DB.rek_view;
       return await RekView.findAll({ where: { userId: parent.id }});
     },
+    followedHashtags: async (parent, _, { DB }) => {
+      return await parent.getFollowedHashtags();
+    },
     followedByCurrentUser: async (parent, _, { DB, id }) => {
-      const Follows = DB.follows;
-      const exists = await Follows.findOne({ where: { followerId: id, followeeId: parent.id }})
+      const UserFollow = DB.user_follow;
+      const exists = await UserFollow.findOne({ where: { followerId: id, followeeId: parent.id }})
       return exists != null;
     }
   },
@@ -72,15 +75,29 @@ module.exports = {
       const User = DB.user;
       return await User.findByPk(parent.userId);
     },
-    parents: async(parent, _, { DB }) => {
+    parents: async (parent, _, { DB }) => {
       const Rek = DB.rek;
       const rek = await Rek.findByPk(parent.id);
       return await rek.getParents();
     },
-    children: async(parent, _, { DB }) => {
+    children: async (parent, _, { DB }) => {
       const Rek = DB.rek;
       const rek = await Rek.findByPk(parent.id);
       return await rek.getChildren();
+    },
+    hashtags: async (parent, _, { DB }) => {
+      return await parent.getHashtags();
+    }
+  },
+  Hashtag: {
+    reks: async (parent, _, { DB }) => {
+      const reks = await parent.getReks();
+      return { stream: reks }
+    },
+    followedByCurrentUser: async (parent, _, { DB, id }) => {
+      const HashtagFollow = DB.hashtag_follow;
+      const exists = await HashtagFollow.findOne({ where: { hashtagId: parent.id, followerId: id }})
+      return exists != null;
     }
   },
   Bookmark: {
@@ -154,6 +171,16 @@ module.exports = {
       const more = stream.length == 10;
       return { stream, more }
     },
+    hashtag: async (args, { DB }) => {
+      const Hashtag = DB.hashtag;
+      return await Hashtag.findOne({ where: args });
+    },
+    hashtagFeed: async ({ name, n }, { DB }) => {
+      const Hashtag = DB.hashtag;
+      const hashtag = await Hashtag.findOne({ where: { name } });
+      const offset = n ? n * 10 : 0;
+      return await hashtag.getFeed({ offset });
+    },
     currentUser: async (_, { DB, id }) => {
       const User = DB.user;
       return await User.findByPk(id)
@@ -200,18 +227,20 @@ module.exports = {
       });
       return { invoice, satoshis }
     },
-    toggleFollow: async ({ userId }, { DB, id }) => {
-      const Follows = DB.follows;
-      const exists = await Follows.findOne({ where: { followerId: id, followeeId: userId }})
+    toggleFollow: async ({ type, ...args}, { DB, id }) => {
+      const Model = DB[`${type}_follow`];
+      args.followerId = id;
+
+      const exists = await Model.findOne({ where: args})
       if (exists == null) {
-        await Follows.create({ followerId: id, followeeId: userId })
+        await Model.create(args)
         return true;
       } else {
-        await Follows.destroy({ where: { followerId: id, followeeId: userId }});
+        await Model.destroy({ where: args});
         return false;
       }
     },
-    createRek: async ({ episodeId, walletSatoshis = 0, invoiceSatoshis = 0 }, { DB, dataSources, id }) => {
+    createRek: async ({ episodeId, tags, walletSatoshis = 0, invoiceSatoshis = 0 }, { DB, dataSources, id }) => {
       const Rek = DB.rek;
 
       const rek = {
@@ -241,7 +270,11 @@ module.exports = {
         await user.save();
 
         rek.satoshis = walletSatoshis;
-        return await Rek.create(rek);
+        rek.valueGenerated = rek.satoshis;
+
+        const newRek = await Rek.create(rek);
+        await newRek.addTags(tags);
+        return newRek;
       }
 
       return { invoice, satoshis: invoiceSatoshis }

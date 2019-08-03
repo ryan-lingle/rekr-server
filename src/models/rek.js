@@ -65,6 +65,7 @@ module.exports = (sequelize, DataTypes) => {
   rek.associate = function(models) {
     rek.belongsTo(models.user);
     rek.belongsTo(models.episode);
+    rek.hasMany(models.rek_view);
 
     rek.belongsToMany(rek, {
       through: models.rek_relationships,
@@ -85,6 +86,17 @@ module.exports = (sequelize, DataTypes) => {
     });
 
   };
+
+  rek.prototype.addTags = async function (tags) {
+    const Hashtag = sequelize.models.hashtag;
+    const Tag = sequelize.models.tag;
+    const { id } = this;
+    return await Promise.all(tags.map(async ({ name }) => {
+      const res = await Hashtag.findOrCreate({ where: { name }});
+      const hashtag = res[0];
+      return await Tag.create({ rekId: id, hashtagId: hashtag.id });
+    }));
+  }
 
   async function updateValueGenerated(rek, satoshis) {
     rek.valueGenerated = rek.valueGenerated + satoshis;

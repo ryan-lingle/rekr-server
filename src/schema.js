@@ -35,6 +35,12 @@ const typeDefs = gql`
     count: Int!
   }
 
+  type HashtagStream {
+    more: Boolean
+    stream: [Hashtag]
+    count: Int!
+  }
+
   type User {
     id: ID!
     current: Boolean!
@@ -50,6 +56,7 @@ const typeDefs = gql`
     following: UserStream!
     feed: RekStream!
     rek_views: [RekView]
+    followedHashtags: [Hashtag]
     followedByCurrentUser: Boolean!
   }
 
@@ -76,7 +83,7 @@ const typeDefs = gql`
   }
 
   type Rek {
-    id: Int!
+    id: ID
     user: User!
     parents: [Rek]
     children: [Rek]
@@ -84,6 +91,14 @@ const typeDefs = gql`
     satoshis: Int!
     invoice: String
     valueGenerated: Int!
+    hashtags: [Hashtag]
+  }
+
+  type Hashtag {
+    id: ID
+    name: String!
+    reks: RekStream!
+    followedByCurrentUser: Boolean!
   }
 
   type RekView {
@@ -122,6 +137,10 @@ const typeDefs = gql`
     released: String!
   }
 
+  input TagInput {
+    name: String!
+  }
+
   type Invoice {
     satoshis: Int
     invoice: String
@@ -136,6 +155,7 @@ const typeDefs = gql`
     episode: EpisodeStream
     podcast: PodcastStream
     user: UserStream
+    hashtag: HashtagStream
   }
 
   type Subscription {
@@ -152,16 +172,18 @@ const typeDefs = gql`
     users(n: Int!, userId: String, followers: Boolean, following: Boolean): UserStream! @requireAuth
     bookmarks(n: Int!, userId: String): BookmarkStream! @requireAuth
     podcast(slug: String!): Podcast! @requireAuth
+    hashtag(name: String): Hashtag @requireAuth
+    hashtagFeed(name: String, n: Int!): RekStream! @requireAuth
   }
 
   type Mutation {
     parsePodcast(rssUrl: String!): Podcast! @requireAuth
     withdrawInvoice(satoshis: Int!): Invoice! @requireAuth
-    toggleFollow(userId: Int!): Boolean! @requireAuth
+    toggleFollow(followeeId: String, hashtagId: String, type: String): Boolean! @requireAuth
     createRekView(rekId: Int!): RekView! @requireAuth
     createBookmark(episodeId: Int!): BookmarkResponse! @requireAuth
     destroyBookmark(episodeId: Int!): BookmarkResponse! @requireAuth
-    createRek(episodeId: String!, walletSatoshis: Int, invoiceSatoshis: Int): Invoice! @requireAuth
+    createRek(episodeId: String!, tags: [TagInput], walletSatoshis: Int, invoiceSatoshis: Int): Invoice! @requireAuth
     createPodcast(title: String, rss: String, description: String, email: String, website: String, image: String): Podcast! @requireAuth
     createEpisodes(episodes: [EpisodeInput], podcastId: String!): [Episode] @requireAuth
     createUser(email: String!, username: String!, password: String!): LogInResponse!

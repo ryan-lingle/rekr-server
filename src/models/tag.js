@@ -1,12 +1,25 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
   const tag = sequelize.define('tag', {
-    rekId: DataTypes.INTEGER,
+    rekId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        async isUnique(val) {
+          const { rekId, hashtagId } = this;
+
+          const exists = await tag.findOne({ where: { rekId, hashtagId } })
+
+          if (exists) {
+            throw new Error('Duplicate Hashtag')
+          }
+        }
+      }
+    },
     hashtagId: DataTypes.INTEGER
   }, {});
   tag.associate = function(models) {
-    tag.belongsTo(models.hashtag);
-    tag.belongsTo(models.rek);
+
   };
   return tag;
 };

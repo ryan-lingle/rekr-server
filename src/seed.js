@@ -119,8 +119,17 @@ const podcasts = [
   }
 ]
 
+const hashtags = ['bitcoin', 'shitcoins', 'bitcoin-maximalism', 'toxic', 'austrian-econ'];
+
+function twoHashtags() {
+  return [
+    hashtags[Math.floor(Math.random()*hashtags.length)],
+    hashtags[Math.floor(Math.random()*hashtags.length)]
+  ];
+}
+
 const User = db.user;
-const Follows = db.follows;
+const UserFollow = db.user_follow;
 const Rek = db.rek;
 const Podcast = db.podcast;
 const Episode = db.episode;
@@ -157,7 +166,7 @@ async function destroyItAll() {
     where: {},
     individualHooks: true,
   })
-  await Follows.destroy({
+  await UserFollow.destroy({
     where: {},
     individualHooks: true,
   })
@@ -191,7 +200,7 @@ async function createPodcasts() {
 }
 
 async function createPodcast(podcast) {
-  console.log('Creating a Podcast')
+  console.log(`Creating Podcast at ${podcast.rss}`)
   const feed = new RssFeed(podcast.rss);
   const {title, description, rss, email, website, image, episodes } = await feed.toPodcast();
   console.log(podcast.owner)
@@ -221,14 +230,18 @@ async function createReks() {
       const podcast = await Podcast.findOne({ order: db.Sequelize.fn('RANDOM') })
       const episode = await Episode.findOne({ order: db.Sequelize.fn('RANDOM'), where: { podcastId: podcast.id } })
       const sats = randomSats();
-      const rek = {
+      const rekOptions = {
         episodeId: episode.id,
         satoshis: sats,
         userId: user.id,
         valueGenerated: sats
       }
 
-      await Rek.create(rek)
+      const rek = await Rek.create(rekOptions);
+
+      console.log("adding hashtags")
+      const hashtags = twoHashtags();
+      await rek.addTags(hashtags);
     }
   }
 

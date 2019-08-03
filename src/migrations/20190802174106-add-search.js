@@ -4,6 +4,7 @@ const vectorName = '_search';
 const searchObjects = {
   podcasts: ['title', 'description'],
   episodes: ['title', 'description'],
+  hashtags: ['name'],
   users: ['username']
 };
 
