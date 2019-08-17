@@ -1,4 +1,5 @@
 'use strict';
+const { inOneMonth } = require('../datasources/scheduler');
 module.exports = (sequelize, DataTypes) => {
   const rek = sequelize.define('rek', {
     userId: DataTypes.INTEGER,
@@ -32,13 +33,9 @@ module.exports = (sequelize, DataTypes) => {
             const parentRek = await view.getRek();
 
             // update parent's "valueGenerated" | split value among the other views
-            updateValueGenerated(parentRek, (rek.satoshis / views.length));
+            updateValueGenerated(parentRek, Math.floor(rek.satoshis / views.length));
 
             await RekRelationship.create({ parentRekId: parentRek.id, childRekId: rek.id });
-
-            parentRek.valueGenerated = parentRek.valueGenerated + rek.satoshis;
-            parentRek.save();
-
 
             // pay out og rekr
             const rekr = await parentRek.getUser();
@@ -91,19 +88,32 @@ module.exports = (sequelize, DataTypes) => {
     const Hashtag = sequelize.models.hashtag;
     const Tag = sequelize.models.tag;
     const { id } = this;
-    return await Promise.all(tags.map(async ({ name }) => {
+    return await Promise.all(tags.filter(onlyUnique).map(async ({ name }) => {
       const res = await Hashtag.findOrCreate({ where: { name }});
       const hashtag = res[0];
       return await Tag.create({ rekId: id, hashtagId: hashtag.id });
     }));
   }
 
+  function onlyUnique(value, index, self) {
+    return self.indexOf(value) === index;
+  }
+
   async function updateValueGenerated(rek, satoshis) {
+    const user = await rek.getUser();
+    console.log(`updating ${user.username} from ${rek.valueGenerated} to:`)
     rek.valueGenerated = rek.valueGenerated + satoshis;
+    console.log(rek.valueGenerated)
     rek.save();
+    inOneMonth(() => {
+      rek.valueGenerated = rek.valueGenerated - satoshis;
+      rek.save();
+    })
 
     const parents = await rek.getParents();
-    parents.forEach(parent => updateValueGenerated(parent, satoshis))
+    for (let i = 0; i < parents.length; i++) {
+      await updateValueGenerated(parents[i], Math.floor(satoshis / parents.length))
+    }
   }
 
   return rek;

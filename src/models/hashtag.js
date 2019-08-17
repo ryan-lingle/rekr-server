@@ -2,7 +2,14 @@
 module.exports = (sequelize, DataTypes) => {
   const hashtag = sequelize.define('hashtag', {
     name: DataTypes.STRING
-  }, {});
+  }, {
+    getterMethods: {
+      followers: async function() {
+        const HashtagFollow = sequelize.models.hashtag_follow;
+        return await HashtagFollow.count({ where: { hashtagId: this.id }});
+      }
+    },
+  });
   hashtag.associate = function(models) {
     hashtag.belongsToMany(models.rek, {
       through: models.tag,

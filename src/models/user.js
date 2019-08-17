@@ -42,6 +42,8 @@ module.exports = (sequelize, DataTypes) => {
         }
       }
     },
+    paymentMethod: DataTypes.STRING,
+    walletPermission: DataTypes.BOOLEAN,
     satoshis: {
       type: DataTypes.INTEGER,
       validate: {

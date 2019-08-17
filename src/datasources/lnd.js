@@ -1,4 +1,10 @@
-const { authenticatedLndGrpc, createInvoice, subscribeToInvoices } = require('ln-service');
+const {
+  authenticatedLndGrpc,
+  createInvoice,
+  subscribeToInvoices,
+  decodePaymentRequest,
+  pay
+} = require('ln-service');
 const { pubsub } = require('../pubsub');
 const DB = require('../models');
 const Rek = DB.rek;
@@ -33,4 +39,22 @@ async function subscribeInvoice(invoice, callback) {
   }
 }
 
-module.exports = { getInvoice, subscribeInvoice };
+async function withdraw(request, userSatoshis) {
+  console.log(userSatoshis);
+  const { is_expired, tokens } = await decodePaymentRequest({ lnd, request });
+  console.log(tokens);
+  if (is_expired) {
+    throw new Error('The invoice you supplied was expired.');
+  } else if (tokens > userSatoshis) {
+    throw new Error('Insufficient Funds');
+  } else {
+    try {
+      const { is_confirmed } = await pay({ lnd, request });
+      if (is_confirmed) return { satoshis: tokens, success: true };
+    } catch(err) {
+      return { success: false, error: err };
+    }
+  }
+}
+
+module.exports = { getInvoice, withdraw };

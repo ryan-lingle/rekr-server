@@ -217,7 +217,7 @@ module.exports = {
       const feed = new RssFeed(rssUrl);
       return await feed.toPodcast()
     },
-    withdrawInvoice: async ({ satoshis }, { dataSources, id, DB }) => {
+    deposit: async ({ satoshis }, { dataSources, id, DB }) => {
       const user = await DB.user.findByPk(id);
       const { getInvoice } = dataSources.Lightning;
       const invoice = await getInvoice(satoshis, async (invoice) => {
@@ -226,6 +226,16 @@ module.exports = {
         pubsub.publish('INVOICE_PAID', { userId: id, invoice })
       });
       return { invoice, satoshis }
+    },
+    withdraw: async ({ invoice }, { dataSources, id, DB }) => {
+      const user = await DB.user.findByPk(id);
+      const { withdraw } = dataSources.Lightning;
+      const res = await withdraw(invoice, user.satoshis);
+      if (res.success) {
+        user.satoshis = user.satoshis - res.satoshis;
+        await user.save();
+      }
+      return res;
     },
     toggleFollow: async ({ type, ...args}, { DB, id }) => {
       const Model = DB[`${type}_follow`];

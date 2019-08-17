@@ -119,7 +119,7 @@ const podcasts = [
   }
 ]
 
-const hashtags = ['bitcoin', 'shitcoins', 'bitcoin-maximalism', 'toxic', 'austrian-econ'];
+const hashtags = [{ name: 'bitcoin' }, { name: 'maximalism' },{ name: 'soy' },{ name: 'shitcoinery' },{ name: 'fiat' },{ name: 'austrian-economics' },{ name: 'incerto' },{ name: 'toxic' },];
 
 function twoHashtags() {
   return [

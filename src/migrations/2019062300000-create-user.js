@@ -27,6 +27,14 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      paymentMethod: {
+        type: Sequelize.STRING,
+      },
+      walletPermission: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true,
+        allowNull: false,
+      },
       profilePic: {
         type: Sequelize.STRING
       },

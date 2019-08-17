@@ -58,6 +58,8 @@ const typeDefs = gql`
     rek_views: [RekView]
     followedHashtags: [Hashtag]
     followedByCurrentUser: Boolean!
+    paymentMethod: String
+    walletPermission: Boolean!
   }
 
   type Episode {
@@ -98,6 +100,7 @@ const typeDefs = gql`
     id: ID
     name: String!
     reks: RekStream!
+    followers: Int!
     followedByCurrentUser: Boolean!
   }
 
@@ -158,6 +161,12 @@ const typeDefs = gql`
     hashtag: HashtagStream
   }
 
+  type WithdrawResponse {
+    satoshis: Int!
+    success: Boolean!
+    error: String
+  }
+
   type Subscription {
     invoicePaid(invoice: String!): InvoicePaid!
   }
@@ -178,7 +187,8 @@ const typeDefs = gql`
 
   type Mutation {
     parsePodcast(rssUrl: String!): Podcast! @requireAuth
-    withdrawInvoice(satoshis: Int!): Invoice! @requireAuth
+    deposit(satoshis: Int!): Invoice! @requireAuth
+    withdraw(invoice: String!): WithdrawResponse! @requireAuth
     toggleFollow(followeeId: String, hashtagId: String, type: String): Boolean! @requireAuth
     createRekView(rekId: Int!): RekView! @requireAuth
     createBookmark(episodeId: Int!): BookmarkResponse! @requireAuth
