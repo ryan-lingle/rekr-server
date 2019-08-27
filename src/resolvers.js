@@ -3,6 +3,7 @@ const { Kind } = require('graphql/language');
 const { AuthenticationError } = require('apollo-server-express');
 const Jwt = require("./auth/jwt")
 const { pubsub } = require('./pubsub');
+const { sendConfirmationEmail } = require('./datasources/mailer');
 
 module.exports = {
   User: {
@@ -87,7 +88,7 @@ module.exports = {
     },
     hashtags: async (parent, _, { DB }) => {
       return await parent.getHashtags();
-    }
+    },
   },
   Hashtag: {
     reks: async (parent, _, { DB }) => {
@@ -123,14 +124,10 @@ module.exports = {
       return new Date(value); // value from the client
     },
     serialize(value) {
-      const date = new Date(value);
-      return date.toLocaleDateString({ month: "long", day: "numeric", year: "long" });
+      return new Date(value);
     },
     parseLiteral(ast) {
-      if (ast.kind === Kind.INT) {
-        return parseInt(ast.value, 10); // ast value is always in string format
-      }
-      return null;
+      return parseInt(ast.value); // ast value is always in string format
     },
   }),
   Query: {
@@ -325,27 +322,27 @@ module.exports = {
       }
     },
     createPodcast: async ({ title,rss,description,email,website,image }, { dataSources, DB, id }) => {
-      const { ListenNotes } = dataSources;
+      const { ListenNotes, RssFeed } = dataSources;
       const Podcast = DB.podcast;
       const Episode = DB.episode;
 
-      const itunesId = await ListenNotes.itunesIdByRss(rss);
-      const userId = id;
-      const podcast = await Podcast.findOrCreate({ where: {
+      // const itunesId = await ListenNotes.itunesIdByRss(rss);
+
+      const podcasts = await Podcast.findOrCreate({ where: {
         title, description, rss, email,
-        website, image, itunesId, userId
+        website, image, userId: id
       }});
 
-      return podcast[0];
+      return podcasts[0];
     },
     createEpisodes: async ({ episodes, podcastId }, { DB }) => {
       const Episode = DB.episode;
-      episodes = await Promise.all(episodes.map(episode => {
-        Episode.findOrCreate({
-          where: {
-              podcastId: podcastId, title: episode.title,
-              description: episode.description, released: episode.released
-          }
+      console.log(episodes)
+      episodes = await Promise.all(episodes.map(async episode => {
+        console.log(episode);
+        return await Episode.create({
+          podcastId: podcastId, title: episode.title,
+          description: episode.description, released: episode.released
         })
       }));
       return episodes.flat();
@@ -360,6 +357,30 @@ module.exports = {
       await Bookmark.destroy({ where: { episodeId, userId: id }})
       return { bookmarkExists: false }
     },
+    confirmEmail: async (_, { token }, { DB }) => {
+      const User = DB.user;
+      const Podcast = DB.podcast;
+
+      const user = await User.findOne({ where: { token }});
+      if (user) {
+        user.emailVerified = true;
+        await user.save();
+        return { user };
+      }
+
+      const podcast = await Podcast.findOne({ where: { token }});
+      if (podcast) {
+        podcast.emailVerified = true;
+        await podcast.save();
+        return { podcast };
+      }
+    },
+    resendConfirmEmail: async (_, __, { id, DB }) => {
+      const User = DB.user;
+      const user = await User.findByPk(id);
+      await sendConfirmationEmail(user);
+      return true;
+    }
   },
   Subscription: {
     invoicePaid: {

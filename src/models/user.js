@@ -1,6 +1,7 @@
 'use strict';
 const bcrypt = require("bcrypt");
 const Sequelize = require("sequelize");
+const { sendConfirmationEmail } = require("../datasources/mailer");
 
 module.exports = (sequelize, DataTypes) => {
   const user = sequelize.define('user', {
@@ -10,6 +11,8 @@ module.exports = (sequelize, DataTypes) => {
         isEmail: true,
       }
     },
+    emailVerified: DataTypes.BOOLEAN,
+    token: DataTypes.STRING,
     username: {
       type: DataTypes.STRING,
       validate: {
@@ -75,9 +78,18 @@ module.exports = (sequelize, DataTypes) => {
     },
     hooks: {
       beforeCreate: async function(user) {
+        // encrypt password
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(user.password, salt);
+
+        // sample profile pic
         if (!user.profilePic) user.profilePic = randomProfilePic();
+
+        // generate random token
+        user.token = Math.random().toString(36).substr(2);
+
+        // send confirmation email
+        if (user.email) sendConfirmationEmail(user);
       },
       beforeDestroy: async function(user) {
         const Podcast = sequelize.models.podcast;

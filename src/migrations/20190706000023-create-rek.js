@@ -33,6 +33,11 @@ module.exports = {
         allowNull: false,
         defaultValue: 0,
       },
+      monthValueGenerated: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
       satoshis: {
         type: Sequelize.INTEGER
       },

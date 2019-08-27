@@ -7,6 +7,7 @@ module.exports = (sequelize, DataTypes) => {
     satoshis: DataTypes.INTEGER,
     invoice: DataTypes.TEXT,
     valueGenerated: DataTypes.INTEGER,
+    monthValueGenerated: DataTypes.INTEGER,
     invoiceId: DataTypes.TEXT,
   }, {
     hooks: {
@@ -28,20 +29,22 @@ module.exports = (sequelize, DataTypes) => {
         });
 
         if (views.length > 0) {
-          views.forEach(async view => {
+          await Promise.all(views.map(async view => {
             // update parent rek
             const parentRek = await view.getRek();
 
-            // update parent's "valueGenerated" | split value among the other views
-            updateValueGenerated(parentRek, Math.floor(rek.satoshis / views.length));
-
+            // build new relationships
             await RekRelationship.create({ parentRekId: parentRek.id, childRekId: rek.id });
 
             // pay out og rekr
             const rekr = await parentRek.getUser();
             rekr.satoshis = rekr.satoshis + Math.floor(rek.satoshis * (.1 / views.length));
             rekr.save();
-          })
+          }));
+
+          updateValueGenerated(rek);
+
+
           // pay out podcaster
           const episode = await rek.getEpisode();
           const podcast = await episode.getPodcast();
@@ -99,21 +102,53 @@ module.exports = (sequelize, DataTypes) => {
     return self.indexOf(value) === index;
   }
 
-  async function updateValueGenerated(rek, satoshis) {
-    const user = await rek.getUser();
-    console.log(`updating ${user.username} from ${rek.valueGenerated} to:`)
-    rek.valueGenerated = rek.valueGenerated + satoshis;
-    console.log(rek.valueGenerated)
-    rek.save();
-    inOneMonth(() => {
-      rek.valueGenerated = rek.valueGenerated - satoshis;
-      rek.save();
-    })
-
-    const parents = await rek.getParents();
-    for (let i = 0; i < parents.length; i++) {
-      await updateValueGenerated(parents[i], Math.floor(satoshis / parents.length))
+  rek.prototype.tree = async function() {
+    const parents = await this.getParents();
+    const trees = await Promise.all(parents.map(async c => await c.tree()));
+    const res = {};
+    return {
+      id: this.id,
+      parents: trees
     }
+  };
+
+  async function updateValueGenerated(rek) {
+    const tree = await rek.tree();
+    const coefficients = {};
+    if (tree.parents.length > 0) {
+      parseTree(tree, coefficients, 1 / tree.parents.length);
+      allocateValue(rek.satoshis, coefficients)
+    }
+  }
+
+  function allocateValue(satoshis, coefficients) {
+    const Rek = sequelize.models.rek;
+    Object.keys(coefficients).forEach(id => {
+      Rek.findByPk(id).then(rek => {
+        const val = Math.floor(satoshis * coefficients[id]);
+        rek.valueGenerated = rek.valueGenerated + val;
+        rek.monthValueGenerated = rek.monthValueGenerated + val;
+
+        rek.save();
+        inOneMonth(() => {
+          rek.monthValueGenerated = rek.monthValueGenerated - val;
+          rek.save();
+        })
+      })
+    })
+  }
+
+  function parseTree(tree, coefficients, ratio) {
+    tree.parents.forEach(childTree => {
+      if (coefficients[childTree.id]) {
+        coefficients[childTree.id] += ratio;
+      } else {
+        coefficients[childTree.id] = ratio;
+      }
+      if (childTree.parents.length > 0) {
+        parseTree(childTree, coefficients, ratio / childTree.parents.length);
+      }
+    });
   }
 
   return rek;

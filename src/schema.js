@@ -47,6 +47,7 @@ const typeDefs = gql`
     satoshis: Int!
     username: String!
     email: String
+    emailVerified: Boolean!
     password: String
     profilePic: String
     podcasts: [Podcast]
@@ -77,11 +78,13 @@ const typeDefs = gql`
     rss: String
     description: String
     email: String
+    emailVerified: Boolean!
     website: String
     image: String
     itunesId: Int
     slug: String
     episodes: [Episode]
+    latestEpisodeDate: Date
   }
 
   type Rek {
@@ -93,7 +96,13 @@ const typeDefs = gql`
     satoshis: Int!
     invoice: String
     valueGenerated: Int!
+    monthValueGenerated: Int!
     hashtags: [Hashtag]
+  }
+
+  type EmailVerification {
+    user: User
+    podcast: Podcast
   }
 
   type Hashtag {
@@ -199,6 +208,8 @@ const typeDefs = gql`
     createUser(email: String!, username: String!, password: String!): LogInResponse!
     updateUser(email: String, username: String, password: String, profilePic: Upload): User! @requireAuth
     logIn(username: String!, password: String!): LogInResponse!
+    confirmEmail(token: String!): EmailVerification!
+    resendConfirmEmail: Boolean!
   }
 `;
 

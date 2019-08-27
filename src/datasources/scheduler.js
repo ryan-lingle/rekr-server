@@ -19,5 +19,10 @@ async function inOneMonth(doThis) {
   });
 }
 
-module.exports = { inOneMonth };
+async function everyHour(doThis) {
+  cron.schedule("0 * * * * *", () =>  {
+    doThis();
+  });
+}
 
+module.exports = { inOneMonth, everyHour };
