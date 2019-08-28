@@ -15,7 +15,6 @@ module.exports = {
       },
       email: {
         type: Sequelize.STRING,
-        allowNull: false,
         isEmail: true,
       },
       emailVerified: {
@@ -33,7 +32,6 @@ module.exports = {
       },
       password: {
         type: Sequelize.STRING,
-        allowNull: false,
       },
       paymentMethod: {
         type: Sequelize.STRING,
@@ -44,6 +42,15 @@ module.exports = {
         allowNull: false,
       },
       profilePic: {
+        type: Sequelize.STRING
+      },
+      twitterId: {
+        type: Sequelize.STRING
+      },
+      twitterKey: {
+        type: Sequelize.STRING
+      },
+      twitterSecret: {
         type: Sequelize.STRING
       },
       createdAt: {

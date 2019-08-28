@@ -25,11 +25,11 @@ module.exports = (sequelize, DataTypes) => {
     const split = term.split(' ');
     if (split.length > 1) {
       return await sequelize.query(`
-        SELECT *
+        SELECT episodes.title, episodes."podcastId", episodes.id
         FROM ${this.tableName}
-        INNER JOIN podcasts ON podcasts.id = "podcastId"
+        INNER JOIN podcasts ON podcasts.id = episodes."podcastId"
         WHERE episodes._search @@ plainto_tsquery('english', :term)
-        AND "emailVerified" = true
+        AND podcasts."emailVerified" = true
         LIMIT 50
         OFFSET :offset;
       `, {
@@ -38,11 +38,11 @@ module.exports = (sequelize, DataTypes) => {
       });
     } else {
       return await sequelize.query(`
-        SELECT *
+        SELECT episodes.title, episodes."podcastId", episodes.id
         FROM ${this.tableName}
-        INNER JOIN podcasts ON podcasts.id = "podcastId"
+        INNER JOIN podcasts ON podcasts.id = episodes."podcastId"
         WHERE episodes._search @@ to_tsquery('english', :term)
-        AND "emailVerified" = true
+        AND podcasts."emailVerified" = true
         LIMIT 50
         OFFSET :offset;
       `, {

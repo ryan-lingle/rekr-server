@@ -212,6 +212,8 @@ const typeDefs = gql`
     confirmEmail(token: String!): EmailVerification!
     resendUserEmail: Boolean!
     resendPodcastEmail(podcastId: String!): Boolean!
+    twitterToken: String!
+    twitterAccessToken(requestToken: String!, oathVerifier: String!): LogInResponse!
   }
 `;
 

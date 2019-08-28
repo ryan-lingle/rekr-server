@@ -12,6 +12,7 @@ const RssFeed = require('./datasources/rss_feed');
 const ListenNotes = require('./datasources/listen_notes');
 const Lightning = require('./datasources/lnd');
 const Images = require('./datasources/images');
+const Twitter = require('./dataSources/twitter');
 
 const AuthDirective = require('./auth/auth_directive');
 
@@ -36,6 +37,7 @@ const server = new ApolloServer({
     RssFeed,
     Lightning,
     Images,
+    Twitter: new Twitter(),
     Itunes: new ItunesApi(),
     ListenNotes: new ListenNotes(),
   })

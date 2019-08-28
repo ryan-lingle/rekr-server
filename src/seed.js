@@ -3,7 +3,7 @@ const RssFeed = require('./datasources/rss_feed');
 
 const users = [
   {
-    username: "i_amm_nobody",
+    username: "chef",
     password: "password",
     email: "email@email.com",
     profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/i_amm_nobody.jpg"

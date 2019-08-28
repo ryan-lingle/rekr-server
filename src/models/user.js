@@ -59,6 +59,9 @@ module.exports = (sequelize, DataTypes) => {
     },
     password: DataTypes.STRING,
     profilePic: DataTypes.STRING,
+    twitterId: DataTypes.STRING,
+    twitterKey: DataTypes.STRING,
+    twitterSecret: DataTypes.STRING,
   }, {
     getterMethods: {
       followers: async function() {
@@ -82,8 +85,10 @@ module.exports = (sequelize, DataTypes) => {
     hooks: {
       beforeCreate: async function(user) {
         // encrypt password
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(user.password, salt);
+        if (user.password) {
+          const salt = await bcrypt.genSalt(10);
+          user.password = await bcrypt.hash(user.password, salt);
+        };
 
         // sample profile pic
         if (!user.profilePic) user.profilePic = randomProfilePic();

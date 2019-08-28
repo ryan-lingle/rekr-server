@@ -394,6 +394,12 @@ module.exports = {
       const podcast = await Podcast.findByPk(podcastId);
       await sendPodcastEmail(podcast);
       return true
+    },
+    twitterToken: async (_, __, { dataSources: { Twitter } }) => {
+      return await Twitter.requestToken();
+    },
+    twitterAccessToken: async (_, args, { dataSources: { Twitter }}) => {
+      return await Twitter.accessToken(args);
     }
   },
   Subscription: {
