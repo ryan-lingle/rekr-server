@@ -8,7 +8,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-async function sendConfirmationEmail({ username, email, token }) {
+async function sendUserEmail({ username, email, token }) {
   const mailOptions = {
     from: 'hello@rekr.com',
     to: 'lingleryan@gmail.com',
@@ -18,7 +18,7 @@ async function sendConfirmationEmail({ username, email, token }) {
              <br></br>
              <br></br>
              Before you can start recommending episodes and stacking sats we are going to do need
-             to verify that email address of yours:
+             to verify your email address:
              <br></br>
              <br></br>
              <a href="http://localhost:3000/confirm_email/${token}" >Verify Your Email Address</a>
@@ -30,7 +30,34 @@ async function sendConfirmationEmail({ username, email, token }) {
            </div>`
   };
 
+  sendEmail(mailOptions);
+}
 
+async function sendPodcastEmail({ title, email, token }) {
+  const mailOptions = {
+    from: 'hello@rekr.com',
+    to: 'lingleryan@gmail.com',
+    subject: 'Start Receiving Podcast Donations!',
+    html: `<div>
+             Hello ${title} Admin!
+             <br></br>
+             <br></br>
+             Before you can start receiving donations for your episodes we are going to do need
+             to verify your email address:
+             <br></br>
+             <br></br>
+             <a href="http://localhost:3000/confirm_email/${token}" >Verify Your Email Address</a>
+             <br></br>
+             <br></br>
+             Best,
+             <br></br>
+             The Rekr Team
+           </div>`
+  };
+  sendEmail(mailOptions);
+}
+
+function sendEmail(mailOptions) {
   transporter.sendMail(mailOptions, function(error, info){
     if (error) {
       console.log(error);
@@ -40,4 +67,4 @@ async function sendConfirmationEmail({ username, email, token }) {
   });
 }
 
-module.exports = { sendConfirmationEmail };
+module.exports = { sendUserEmail, sendPodcastEmail };

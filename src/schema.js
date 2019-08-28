@@ -141,6 +141,7 @@ const typeDefs = gql`
     token: String!
     username: String!
     profilePic: String!
+    email: String
   }
 
   input EpisodeInput {
@@ -189,7 +190,7 @@ const typeDefs = gql`
     reks(n: Int!, userId: String, feed: Boolean): RekStream! @requireAuth
     users(n: Int!, userId: String, followers: Boolean, following: Boolean): UserStream! @requireAuth
     bookmarks(n: Int!, userId: String): BookmarkStream! @requireAuth
-    podcast(slug: String!): Podcast! @requireAuth
+    podcast(slug: String, id: String): Podcast! @requireAuth
     hashtag(name: String): Hashtag @requireAuth
     hashtagFeed(name: String, n: Int!): RekStream! @requireAuth
   }
@@ -209,7 +210,8 @@ const typeDefs = gql`
     updateUser(email: String, username: String, password: String, profilePic: Upload): User! @requireAuth
     logIn(username: String!, password: String!): LogInResponse!
     confirmEmail(token: String!): EmailVerification!
-    resendConfirmEmail: Boolean!
+    resendUserEmail: Boolean!
+    resendPodcastEmail(podcastId: String!): Boolean!
   }
 `;
 

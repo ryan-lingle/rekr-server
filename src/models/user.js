@@ -1,7 +1,7 @@
 'use strict';
 const bcrypt = require("bcrypt");
 const Sequelize = require("sequelize");
-const { sendConfirmationEmail } = require("../datasources/mailer");
+const { sendUserEmail } = require("../datasources/mailer");
 
 module.exports = (sequelize, DataTypes) => {
   const user = sequelize.define('user', {
@@ -74,6 +74,9 @@ module.exports = (sequelize, DataTypes) => {
         const stream = await this.getIsFollowing({ limit: 10 });
         const more = stream.length == 10;
         return { stream, more, count };
+      },
+      viewedReks: async function() {
+        return await this.getRek_views();
       }
     },
     hooks: {
@@ -89,7 +92,7 @@ module.exports = (sequelize, DataTypes) => {
         user.token = Math.random().toString(36).substr(2);
 
         // send confirmation email
-        if (user.email) sendConfirmationEmail(user);
+        if (user.email) sendUserEmail(user);
       },
       beforeDestroy: async function(user) {
         const Podcast = sequelize.models.podcast;
@@ -132,21 +135,22 @@ module.exports = (sequelize, DataTypes) => {
 
     const following = await this.following;
     const ids = following.stream.map(user => user.id);
-    ids.push(this.id);
 
+    // const viewedReks = await this.viewedReks;
+    // const viewedRekIds = viewedReks.map(view => view.id);
+    ids.push(this.id);
     const stream = await Rek.findAll({
       where: {
         userId: {
           [Op.in]: ids
-        }
+        },
+        // id: {
+        //   [Op.in]: viewedRekIds
+        // }
       },
       order: [['valueGenerated', 'DESC']],
       offset,
-      limit: 10,
-      include: [{
-        model: RekView,
-        order: [sequelize.fn(this.id, sequelize.col('userId'))]
-      }]
+      limit: 10
     })
     const len = stream.length;
     const more = len == 10;

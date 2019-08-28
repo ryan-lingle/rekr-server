@@ -3,7 +3,7 @@ const { Kind } = require('graphql/language');
 const { AuthenticationError } = require('apollo-server-express');
 const Jwt = require("./auth/jwt")
 const { pubsub } = require('./pubsub');
-const { sendConfirmationEmail } = require('./datasources/mailer');
+const { sendUserEmail, sendPodcastEmail } = require('./datasources/mailer');
 
 module.exports = {
   User: {
@@ -306,7 +306,7 @@ module.exports = {
       const user = await User.create({ email, username, password });
       const id = user.id;
       const token = Jwt.sign(id.toString());
-      return { id, token, username: user.username, profilePic: user.profilePic }
+      return { id, token, username: user.username, profilePic: user.profilePic, email: user.email }
     },
     logIn: async (_, { username, password }, { DB }) => {
       const User = DB.user;
@@ -318,28 +318,26 @@ module.exports = {
       } else {
         const id = user.id;
         const token = Jwt.sign(id.toString());
-        return { id, token, username: user.username, profilePic: user.profilePic }
+        return { id, token, username: user.username, profilePic: user.profilePic, email: user.email }
       }
     },
-    createPodcast: async ({ title,rss,description,email,website,image }, { dataSources, DB, id }) => {
+    createPodcast: async ({ title,rss,description,email,website,image }, { dataSources, DB }) => {
       const { ListenNotes, RssFeed } = dataSources;
       const Podcast = DB.podcast;
       const Episode = DB.episode;
 
-      // const itunesId = await ListenNotes.itunesIdByRss(rss);
+      const itunesId = await ListenNotes.itunesIdByRss(rss) || null;
 
       const podcasts = await Podcast.findOrCreate({ where: {
         title, description, rss, email,
-        website, image, userId: id
+        website, itunesId, image
       }});
 
       return podcasts[0];
     },
     createEpisodes: async ({ episodes, podcastId }, { DB }) => {
       const Episode = DB.episode;
-      console.log(episodes)
       episodes = await Promise.all(episodes.map(async episode => {
-        console.log(episode);
         return await Episode.create({
           podcastId: podcastId, title: episode.title,
           description: episode.description, released: episode.released
@@ -357,7 +355,7 @@ module.exports = {
       await Bookmark.destroy({ where: { episodeId, userId: id }})
       return { bookmarkExists: false }
     },
-    confirmEmail: async (_, { token }, { DB }) => {
+    confirmEmail: async (_, { token }, { id, DB }) => {
       const User = DB.user;
       const Podcast = DB.podcast;
 
@@ -370,16 +368,32 @@ module.exports = {
 
       const podcast = await Podcast.findOne({ where: { token }});
       if (podcast) {
-        podcast.emailVerified = true;
-        await podcast.save();
-        return { podcast };
+        if (id != "null") {
+          const user = await User.findByPk(id);
+          podcast.userId = user.id;
+          podcast.emailVerified = true;
+          await podcast.save();
+          return { podcast };
+        } else {
+          throw new Error("NOT_LOGGED_IN");
+        }
       }
     },
-    resendConfirmEmail: async (_, __, { id, DB }) => {
+    resendUserEmail: async (_, __, { id, DB }) => {
       const User = DB.user;
       const user = await User.findByPk(id);
-      await sendConfirmationEmail(user);
-      return true;
+      if (user) {
+        await sendUserEmail(user);
+        return true;
+      } else {
+        throw new Error("NOT_LOGGED_IN");
+      }
+    },
+    resendPodcastEmail: async (_, { podcastId }, { DB }) => {
+      const Podcast = DB.podcast;
+      const podcast = await Podcast.findByPk(podcastId);
+      await sendPodcastEmail(podcast);
+      return true
     }
   },
   Subscription: {

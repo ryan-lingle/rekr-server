@@ -16,7 +16,6 @@ module.exports = {
           },
           key: 'id'
         },
-        allowNull: false
       },
       itunesId: {
         type: Sequelize.INTEGER,

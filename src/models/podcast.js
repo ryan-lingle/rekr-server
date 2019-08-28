@@ -1,5 +1,7 @@
 'use strict';
 const RssFeed = require('../datasources/rss_feed');
+const { sendPodcastEmail } = require("../datasources/mailer");
+
 
 module.exports = (sequelize, DataTypes) => {
   const podcast = sequelize.define('podcast', {
@@ -66,6 +68,8 @@ module.exports = (sequelize, DataTypes) => {
             episode = episodes.shift();
           }
         })
+
+        sendPodcastEmail(podcast);
       }
     }
   });

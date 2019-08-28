@@ -11,7 +11,7 @@ class ListenNotes {
     .header('Content-Type', 'application/x-www-form-urlencoded')
     .send(`rsses=${rssUrl}`)
     const result = response.toJSON();
-    return result.body.podcasts[0].itunes_id;
+    if (result.body.podcasts[0]) return result.body.podcasts[0].itunes_id;
   }
 }
 
