@@ -41,6 +41,12 @@ const typeDefs = gql`
     count: Int!
   }
 
+  type NotificationStream {
+    more: Boolean
+    stream: [Notification]
+    count: Int!
+  }
+
   type User {
     id: ID!
     current: Boolean!
@@ -56,6 +62,7 @@ const typeDefs = gql`
     followers: UserStream!
     following: UserStream!
     feed: RekStream!
+    notifications: [Notification]
     rek_views: [RekView]
     followedHashtags: [Hashtag]
     followedByCurrentUser: Boolean!
@@ -124,6 +131,15 @@ const typeDefs = gql`
     id: Int!
     user: User!
     episode: Episode!
+  }
+
+  type Notification {
+    id: ID
+    user: User!
+    notifier: User!
+    rek: Rek!
+    type: String!
+    satoshis: Int
   }
 
   type BookmarkResponse {
@@ -203,6 +219,7 @@ const typeDefs = gql`
     podcast(slug: String, id: String): Podcast! @requireAuth
     hashtag(name: String): Hashtag @requireAuth
     hashtagFeed(name: String, n: Int!): RekStream! @requireAuth
+    notifications(n: Int!): NotificationStream! @requireAuth
   }
 
   type Mutation {
@@ -211,8 +228,8 @@ const typeDefs = gql`
     withdraw(invoice: String!): WithdrawResponse! @requireAuth
     toggleFollow(followeeId: String, hashtagId: String, type: String): Boolean! @requireAuth
     createRekView(rekId: Int!): RekView! @requireAuth
-    createBookmark(episodeId: Int!): BookmarkResponse! @requireAuth
-    destroyBookmark(episodeId: Int!): BookmarkResponse! @requireAuth
+    createBookmark(episodeId: String!, rekId: String): BookmarkResponse! @requireAuth
+    destroyBookmark(episodeId: String!, rekId: String): BookmarkResponse! @requireAuth
     createRek(episodeId: String!, tweetRek: Boolean!, tags: [TagInput], walletSatoshis: Int, invoiceSatoshis: Int): Invoice! @requireAuth
     createPodcast(title: String, rss: String, description: String, email: String, website: String, image: String): Podcast! @requireAuth
     createEpisodes(episodes: [EpisodeInput], podcastId: String!): [Episode] @requireAuth

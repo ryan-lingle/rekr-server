@@ -44,6 +44,9 @@ module.exports = {
       const UserFollow = DB.user_follow;
       const exists = await UserFollow.findOne({ where: { followerId: id, followeeId: parent.id }})
       return exists != null;
+    },
+    notifications: async (parent) => {
+      return await parent.getNotifications();
     }
   },
   Podcast: {
@@ -117,6 +120,20 @@ module.exports = {
       return await Rek.findByPk(parent.rekId);
     }
   },
+  Notification: {
+    user: async (parent, _, { DB }) => {
+      const User = DB.user;
+      return await User.findByPk(parent.userId);
+    },
+    notifier: async (parent, _, { DB }) => {
+      const User = DB.user;
+      return await User.findByPk(parent.notifierId);
+    },
+    rek: async (parent, _, { DB }) => {
+      const Rek = DB.rek;
+      return await Rek.findByPk(parent.rekId);
+    }
+  },
   Date: new GraphQLScalarType({
     name: 'Date',
     description: 'Date custom scalar type',
@@ -177,6 +194,14 @@ module.exports = {
       const hashtag = await Hashtag.findOne({ where: { name } });
       const offset = n ? n * 10 : 0;
       return await hashtag.getFeed({ offset });
+    },
+    notifications: async ({ n }, { DB, id }) => {
+      const User = DB.user;
+      const user = await User.findByPk(id);
+      const offset = n ? n * 10 : 0;
+      const stream = await user.getNotifications({ limit: 10, offset });
+      const more = stream.length == 10;
+      return { stream, more };
     },
     currentUser: async (_, { DB, id }) => {
       const User = DB.user;
@@ -346,9 +371,16 @@ module.exports = {
       }));
       return episodes.flat();
     },
-    createBookmark: async ({ episodeId }, { DB, id }) => {
+    createBookmark: async ({ episodeId, rekId }, { DB, id }) => {
+
       const Bookmark = DB.bookmark;
       const bookmark = await Bookmark.create({ episodeId, userId: id })
+      if (rekId) {
+        const Notification = DB.notification;
+        const Rek = DB.rek;
+        const rek = await Rek.findByPk(rekId);
+        Notification.create({ userId: rek.userId, rekId: rek.id, notifierId: id, type: "bookmark" })
+      }
       return { bookmarkExists: true, bookmark }
     },
     destroyBookmark: async ({ episodeId }, { DB, id }) => {

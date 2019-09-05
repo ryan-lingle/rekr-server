@@ -115,6 +115,7 @@ module.exports = (sequelize, DataTypes) => {
     user.hasMany(models.rek);
     user.hasMany(models.bookmark);
     user.hasMany(models.rek_view);
+    user.hasMany(models.notification);
     user.belongsToMany(user, {
       through: models.user_follow,
       as: 'followers',

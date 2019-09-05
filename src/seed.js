@@ -110,10 +110,6 @@ const podcasts = [
     owner: "MartyBent"
   },
   {
-    rss: "https://www.whatbitcoindid.com/podcast?format=RSS",
-    owner: "PeterMcCormack"
-  },
-  {
     rss: "https://www.listennotes.com/c/r/9aa0e4180a0340768f58f357bff1243b",
     owner: "stephanlivera"
   }

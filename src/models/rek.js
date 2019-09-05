@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
         const Rek = sequelize.models.rek;
         const RekView = sequelize.models.rek_view;
         const RekRelationship = sequelize.models.rek_relationships;
+        const Notification = sequelize.models.notification;
 
         if (rek.tweetRek) tweetRek(rek);
 
@@ -43,8 +44,18 @@ module.exports = (sequelize, DataTypes) => {
 
             // pay out og rekr
             const rekr = await parentRek.getUser();
-            rekr.satoshis = rekr.satoshis + Math.floor(rek.satoshis * (.1 / views.length));
+            const reward = Math.floor(rek.satoshis * (.1 / views.length));
+            rekr.satoshis = rekr.satoshis + reward;
             rekr.save();
+
+            // create notification
+            Notification.create({
+              notifierId: rek.userId,
+              userId: rekr.id,
+              rekId: parentRek.id,
+              type: "rek",
+              satoshis: reward
+            });
           }));
 
           updateValueGenerated(rek);
