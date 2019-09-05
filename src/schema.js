@@ -61,6 +61,7 @@ const typeDefs = gql`
     followedByCurrentUser: Boolean!
     paymentMethod: String
     walletPermission: Boolean!
+    canTweet: Boolean!
   }
 
   type Episode {
@@ -177,6 +178,15 @@ const typeDefs = gql`
     error: String
   }
 
+  type TwitterResponse {
+    id: Int!
+    signIn: Boolean!
+    token: String
+    username: String
+    profilePic: String
+    email: String
+  }
+
   type Subscription {
     invoicePaid(invoice: String!): InvoicePaid!
   }
@@ -203,7 +213,7 @@ const typeDefs = gql`
     createRekView(rekId: Int!): RekView! @requireAuth
     createBookmark(episodeId: Int!): BookmarkResponse! @requireAuth
     destroyBookmark(episodeId: Int!): BookmarkResponse! @requireAuth
-    createRek(episodeId: String!, tags: [TagInput], walletSatoshis: Int, invoiceSatoshis: Int): Invoice! @requireAuth
+    createRek(episodeId: String!, tweetRek: Boolean!, tags: [TagInput], walletSatoshis: Int, invoiceSatoshis: Int): Invoice! @requireAuth
     createPodcast(title: String, rss: String, description: String, email: String, website: String, image: String): Podcast! @requireAuth
     createEpisodes(episodes: [EpisodeInput], podcastId: String!): [Episode] @requireAuth
     createUser(email: String!, username: String!, password: String!): LogInResponse!
@@ -213,7 +223,7 @@ const typeDefs = gql`
     resendUserEmail: Boolean!
     resendPodcastEmail(podcastId: String!): Boolean!
     twitterToken: String!
-    twitterAccessToken(requestToken: String!, oathVerifier: String!): LogInResponse!
+    twitterAccessToken(requestToken: String!, oathVerifier: String!): TwitterResponse!
   }
 `;
 

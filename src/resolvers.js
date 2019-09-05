@@ -247,13 +247,14 @@ module.exports = {
         return false;
       }
     },
-    createRek: async ({ episodeId, tags, walletSatoshis = 0, invoiceSatoshis = 0 }, { DB, dataSources, id }) => {
+    createRek: async ({ episodeId, tweetRek, tags, walletSatoshis = 0, invoiceSatoshis = 0 }, { DB, dataSources, id }) => {
       const Rek = DB.rek;
 
       const rek = {
         episodeId,
+        tweetRek,
         userId: id,
-      }
+      };
 
       // remove wallet satoshis
       const User = DB.user;
@@ -398,8 +399,8 @@ module.exports = {
     twitterToken: async (_, __, { dataSources: { Twitter } }) => {
       return await Twitter.requestToken();
     },
-    twitterAccessToken: async (_, args, { dataSources: { Twitter }}) => {
-      return await Twitter.accessToken(args);
+    twitterAccessToken: async (_, args, { dataSources: { Twitter }, id }) => {
+      return await Twitter.accessToken({ ...args, id });
     }
   },
   Subscription: {

@@ -62,6 +62,7 @@ module.exports = (sequelize, DataTypes) => {
     twitterId: DataTypes.STRING,
     twitterKey: DataTypes.STRING,
     twitterSecret: DataTypes.STRING,
+    canTweet: DataTypes.BOOLEAN,
   }, {
     getterMethods: {
       followers: async function() {

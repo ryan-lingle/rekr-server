@@ -47,6 +47,11 @@ module.exports = {
       invoiceId: {
         type: Sequelize.TEXT
       },
+      tweetRek: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+        allowNull: false
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

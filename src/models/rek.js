@@ -1,5 +1,7 @@
 'use strict';
 const { inOneMonth } = require('../datasources/scheduler');
+const { composeTweet } = require('../datasources/twitter');
+
 module.exports = (sequelize, DataTypes) => {
   const rek = sequelize.define('rek', {
     userId: DataTypes.INTEGER,
@@ -9,12 +11,15 @@ module.exports = (sequelize, DataTypes) => {
     valueGenerated: DataTypes.INTEGER,
     monthValueGenerated: DataTypes.INTEGER,
     invoiceId: DataTypes.TEXT,
+    tweetRek: DataTypes.BOOLEAN
   }, {
     hooks: {
       afterCreate: async function(rek) {
         const Rek = sequelize.models.rek;
         const RekView = sequelize.models.rek_view;
         const RekRelationship = sequelize.models.rek_relationships;
+
+        if (rek.tweetRek) tweetRek(rek);
 
         const views = await RekView.findAll({
           where: {
@@ -149,6 +154,13 @@ module.exports = (sequelize, DataTypes) => {
         parseTree(childTree, coefficients, ratio / childTree.parents.length);
       }
     });
+  }
+
+  async function tweetRek(rek) {
+    const episode = await rek.getEpisode();
+    const podcast = await episode.getPodcast();
+    const status = `I just donated ${rek.satoshis} Satoshis to ${episode.title} - ${podcast.title} on Rekr. ${podcast.image}`;
+    composeTweet({ status, id: rek.userId });
   }
 
   return rek;
