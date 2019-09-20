@@ -13,12 +13,28 @@ module.exports = (sequelize, DataTypes) => {
         const Rek = sequelize.models.rek;
         await Rek.destroy({ where: { episodeId: episode.id } })
       }
+    },
+    getterMethods: {
+      donationSum: async function() {
+        const result = await sequelize.query(`
+          SELECT SUM(reks.satoshis)
+          FROM reks
+          INNER JOIN episodes on episodes.id = reks."episodeId"
+          WHERE episodes.id = ${this.id};
+        `);
+        return result[0][0].sum;
+      },
     }
   });
   episode.associate = function(models) {
     episode.belongsTo(models.podcast);
     episode.hasMany(models.rek);
     episode.hasMany(models.bookmark);
+    episode.belongsToMany(models.user, {
+      through: models.guest_tag,
+      as: 'guests',
+      foreignKey: 'episodeId',
+    });
   };
 
   episode.search = async function({ term, offset }) {

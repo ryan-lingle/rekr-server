@@ -6,7 +6,16 @@ module.exports = (sequelize, DataTypes) => {
   const rek = sequelize.define('rek', {
     userId: DataTypes.INTEGER,
     episodeId: DataTypes.INTEGER,
-    satoshis: DataTypes.INTEGER,
+    satoshis: {
+      type: DataTypes.INTEGER,
+      validate: {
+        async isPositive(satoshis) {
+          if ((satoshis) < 100) {
+            throw new Error('A Rek must be at least 100 sats.')
+          }
+        }
+      }
+    },
     invoice: DataTypes.TEXT,
     valueGenerated: DataTypes.INTEGER,
     monthValueGenerated: DataTypes.INTEGER,
@@ -19,6 +28,7 @@ module.exports = (sequelize, DataTypes) => {
         const RekView = sequelize.models.rek_view;
         const RekRelationship = sequelize.models.rek_relationships;
         const Notification = sequelize.models.notification;
+        let podcasterPercent = .97;
 
         if (rek.tweetRek) tweetRek(rek);
 
@@ -35,6 +45,7 @@ module.exports = (sequelize, DataTypes) => {
         });
 
         if (views.length > 0) {
+          podcasterPercent = .87;
           await Promise.all(views.map(async view => {
             // update parent rek
             const parentRek = await view.getRek();
@@ -59,22 +70,23 @@ module.exports = (sequelize, DataTypes) => {
           }));
 
           updateValueGenerated(rek);
-
-
-          // pay out podcaster
-          const episode = await rek.getEpisode();
-          const podcast = await episode.getPodcast();
-          const podcaster = await podcast.getUser();
-          podcaster.satoshis = podcaster.satoshis + Math.floor(rek.satoshis * .87);
-          podcaster.save();
-
-        } else {
-          const episode = await rek.getEpisode();
-          const podcast = await episode.getPodcast();
-          const podcaster = await podcast.getUser();
-          podcaster.satoshis = podcaster.satoshis + Math.floor(rek.satoshis * .97);
-          podcaster.save();
         }
+        const episode = await rek.getEpisode();
+        const guests = await episode.getGuests();
+        const podcast = await episode.getPodcast();
+
+        if (guests.length > 0) {
+          const guestPercent = podcasterPercent * podcast.guestShare;
+          guests.forEach(guest => {
+            guest.satoshis = guest.satoshis + Math.floor(rek.satoshis * (guestPercent / guests.length));
+            guest.save();
+          })
+          podcasterPercent = podcasterPercent - guestPercent;
+        }
+
+        const podcaster = await podcast.getUser();
+        podcaster.satoshis = podcaster.satoshis + Math.floor(rek.satoshis * podcasterPercent);
+        podcaster.save();
       }
     }
   });
@@ -104,6 +116,7 @@ module.exports = (sequelize, DataTypes) => {
   };
 
   rek.prototype.addTags = async function (tags) {
+    console.log(tags)
     const Hashtag = sequelize.models.hashtag;
     const Tag = sequelize.models.tag;
     const { id } = this;
@@ -170,7 +183,7 @@ module.exports = (sequelize, DataTypes) => {
   async function tweetRek(rek) {
     const episode = await rek.getEpisode();
     const podcast = await episode.getPodcast();
-    const status = `I just donated ${rek.satoshis} Satoshis to ${episode.title} - ${podcast.title} on Rekr. ${podcast.image}`;
+    const status = `I just donated ${rek.satoshis} Satoshis to ${episode.title} (${podcast.title}) on Rekr. http://localhost:3000/episode/${episode.id}?rekId=${rek.id}&saveRek=1`;
     composeTweet({ status, id: rek.userId });
   }
 

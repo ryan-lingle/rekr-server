@@ -11,7 +11,6 @@ function oneMonthFromNow() {
   return `${seconds} ${minutes + 1} ${hours} ${day} ${month + 1} *`;
 }
 
-
 async function inOneMonth(doThis) {
   const task = cron.schedule(oneMonthFromNow(), () =>  {
     doThis();

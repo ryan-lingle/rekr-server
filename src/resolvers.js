@@ -12,7 +12,7 @@ module.exports = {
     },
     podcasts: async (parent, _, { DB }) => {
       const Podcast = DB.podcast;
-      return await Podcast.findAll({ where: { userId: parent.id }});
+      return await Podcast.findAll({ where: { userId: parent.id }, order: [['id']]});
     },
     reks: async (parent, _, { DB }) => {
       const Rek = DB.rek;
@@ -42,7 +42,8 @@ module.exports = {
     },
     followedByCurrentUser: async (parent, _, { DB, id }) => {
       const UserFollow = DB.user_follow;
-      const exists = await UserFollow.findOne({ where: { followerId: id, followeeId: parent.id }})
+      let exists;
+      if (id != "null") exists = await UserFollow.findOne({ where: { followerId: id, followeeId: parent.id }})
       return exists != null;
     },
     notifications: async (parent) => {
@@ -66,8 +67,12 @@ module.exports = {
     },
     bookmarked: async (parent, _, { DB, id }) => {
       const Bookmark = DB.bookmark;
-      const exists = await Bookmark.findOne({ where: { episodeId: parent.id, userId: id }})
+      let exists;
+      if (id != "null") exists = await Bookmark.findOne({ where: { episodeId: parent.id, userId: id }})
       return exists != null;
+    },
+    guests: async (parent) => {
+      return await parent.getGuests();
     }
   },
   Rek: {
@@ -100,7 +105,8 @@ module.exports = {
     },
     followedByCurrentUser: async (parent, _, { DB, id }) => {
       const HashtagFollow = DB.hashtag_follow;
-      const exists = await HashtagFollow.findOne({ where: { hashtagId: parent.id, followerId: id }})
+      let exists;
+      if (id != "null") exists = await HashtagFollow.findOne({ where: { hashtagId: parent.id, followerId: id }})
       return exists != null;
     }
   },
@@ -148,7 +154,7 @@ module.exports = {
     },
   }),
   Query: {
-    users: async ({ n, userId, followers, following }, { DB }) => {
+    users: async (_, { n, userId, followers, following }, { DB }) => {
       const User = DB.user;
       const user = await User.findByPk(userId);
       const offset = n ? n * 10 : 0;
@@ -164,7 +170,7 @@ module.exports = {
         return { stream, more };
       }
     },
-    reks: async ({ n, userId, feed }, { DB, id }) => {
+    reks: async (_, { n, userId, feed }, { DB, id }) => {
       const offset = n ? n * 10 : 0;
       if (feed) {
         const User = DB.user;
@@ -177,7 +183,7 @@ module.exports = {
         return { stream, more }
       }
     },
-    bookmarks: async ({ n, userId }, { DB, id }) => {
+    bookmarks: async (_, { n, userId }, { DB, id }) => {
       const Bookmark = DB.bookmark;
       const offset = n ? n * 10 : 0;
       userId = userId || id;
@@ -185,11 +191,11 @@ module.exports = {
       const more = stream.length == 10;
       return { stream, more }
     },
-    hashtag: async (args, { DB }) => {
+    hashtag: async (_, args, { DB }) => {
       const Hashtag = DB.hashtag;
       return await Hashtag.findOne({ where: args });
     },
-    hashtagFeed: async ({ name, n }, { DB }) => {
+    hashtagFeed: async (_, { name, n }, { DB }) => {
       const Hashtag = DB.hashtag;
       const hashtag = await Hashtag.findOne({ where: { name } });
       const offset = n ? n * 10 : 0;
@@ -199,7 +205,7 @@ module.exports = {
       const User = DB.user;
       const user = await User.findByPk(id);
       const offset = n ? n * 10 : 0;
-      const stream = await user.getNotifications({ limit: 10, offset });
+      const stream = await user.getNotifications({ limit: 10, offset, order: [['id', 'DESC']]});
       const more = stream.length == 10;
       return { stream, more };
     },
@@ -207,19 +213,23 @@ module.exports = {
       const User = DB.user;
       return await User.findByPk(id)
     },
-    user: async  (args, { DB }) => {
+    user: async  (_, args, { DB }) => {
       const User = DB.user;
-      return await User.findOne({ where: args });
+      const user = await User.findOne({ where: args });
+      return user;
     },
-    allUsers: async (__, { DB }) => {
-      const User = DB.user;
-      return await User.findAll()
-    },
-    episode: async ({ id }, { DB }) => {
+    episode: async (_, { id }, { DB }) => {
       const Episode = DB.episode;
       return await Episode.findByPk(id);
     },
-    search: async ({ term, type, n }, { DB }) => {
+    episodeShow: async (_, { episodeId, rekId }, { DB }) => {
+      const Episode = DB.episode;
+      const Rek = DB.rek;
+      const rek = await Rek.findByPk(rekId);
+      const episode = await Episode.findByPk(episodeId);
+      return { rek, episode };
+    },
+    search: async (_, { term, type, n }, { DB }) => {
       const offset = n ? n * 10 : 0;
       const Model = DB[type];
       const stream = await Model.search({ term, offset });
@@ -228,7 +238,7 @@ module.exports = {
       response[type] = { stream, more };
       return response;
     },
-    podcast: async (args, { DB }) => {
+    podcast: async (_, args, { DB }) => {
       const Podcast = DB.podcast;
       return await Podcast.findOne({ where: args })
     }
@@ -295,7 +305,8 @@ module.exports = {
           rek.invoice = invoice;
           rek.satoshis = invoiceSatoshis + walletSatoshis;
           rek.valueGenerated = rek.satoshis;
-          await Rek.create(rek);
+          const newRek = await Rek.create(rek);
+          await newRek.addTags(tags);
           pubsub.publish('INVOICE_PAID', { userId: id, invoice })
         });
       } else {
@@ -327,12 +338,22 @@ module.exports = {
       const user = await User.update({ profilePic: Location }, { where: { id }});
       return await User.findByPk(id);
     },
-    createUser: async (_, { email, username, password }, { DB }) => {
+    createUser: async (_, { email, username, password, rekId }, { DB }) => {
       const User = DB.user;
+      const RekView = DB.rek_view;
+
       const user = await User.create({ email, username, password });
+
+      if (rekId) RekView.findOrCreate({ where: { rekId, userId: user.id } });
+
       const id = user.id;
+      const hasPodcast = await user.hasPodcast;
       const token = Jwt.sign(id.toString());
-      return { id, token, username: user.username, profilePic: user.profilePic, email: user.email }
+      return { id, token, hasPodcast,
+        username: user.username,
+        profilePic: user.profilePic,
+        email: user.email
+      }
     },
     logIn: async (_, { username, password }, { DB }) => {
       const User = DB.user;
@@ -343,8 +364,14 @@ module.exports = {
         throw new Error('Invalid Username or Password.');
       } else {
         const id = user.id;
+        const hasPodcast = await user.hasPodcast;
         const token = Jwt.sign(id.toString());
-        return { id, token, username: user.username, profilePic: user.profilePic, email: user.email }
+        return {
+          id, token, hasPodcast,
+          username: user.username,
+          profilePic: user.profilePic,
+          email: user.email
+        }
       }
     },
     createPodcast: async ({ title,rss,description,email,website,image }, { dataSources, DB }) => {
@@ -433,6 +460,26 @@ module.exports = {
     },
     twitterAccessToken: async (_, args, { dataSources: { Twitter }, id }) => {
       return await Twitter.accessToken({ ...args, id });
+    },
+    guestShare: async ({ percentage, podcastId }, { DB, id }) => {
+      const Podcast = DB.podcast;
+      const podcast = await Podcast.update({
+        guestShare: percentage
+      }, { where: { id: podcastId, userId: id }});
+
+      return true;
+    },
+    tagGuest: async ({ userIds, episodeIds }, { DB, id }) => {
+      const GuestTag = DB.guest_tag;
+      if (episodeIds.length === 1) {
+        await GuestTag.destroy({ where: { episodeId: episodeIds[0] }})
+      }
+      userIds.map(userId => {
+        episodeIds.map(episodeId => {
+          GuestTag.create({ userId, episodeId });
+        })
+      })
+      return true;
     }
   },
   Subscription: {

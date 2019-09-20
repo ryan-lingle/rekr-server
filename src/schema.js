@@ -78,6 +78,8 @@ const typeDefs = gql`
     description: String
     bookmarked: Boolean
     released: Date
+    donationSum: Int
+    guests: [User]
   }
 
   type Podcast {
@@ -93,6 +95,9 @@ const typeDefs = gql`
     slug: String
     episodes: [Episode]
     latestEpisodeDate: Date
+    donationSum: Int
+    donationCount: Int
+    guestShare: Float!
   }
 
   type Rek {
@@ -159,6 +164,7 @@ const typeDefs = gql`
     username: String!
     profilePic: String!
     email: String
+    hasPodcast: Boolean!
   }
 
   input EpisodeInput {
@@ -201,6 +207,12 @@ const typeDefs = gql`
     username: String
     profilePic: String
     email: String
+    hasPodcast: Boolean
+  }
+
+  type EpisodeShow {
+    rek: Rek
+    episode: Episode!
   }
 
   type Subscription {
@@ -208,17 +220,17 @@ const typeDefs = gql`
   }
 
   type Query {
-    allUsers: [User] @requireAuth
     currentUser: User! @requireAuth
-    user(username: String): User! @requireAuth
-    episode(id: Int!): Episode! @requireAuth
-    search(term: String!, type: String!, n: Int): SearchResults @requireAuth
-    reks(n: Int!, userId: String, feed: Boolean): RekStream! @requireAuth
-    users(n: Int!, userId: String, followers: Boolean, following: Boolean): UserStream! @requireAuth
-    bookmarks(n: Int!, userId: String): BookmarkStream! @requireAuth
-    podcast(slug: String, id: String): Podcast! @requireAuth
-    hashtag(name: String): Hashtag @requireAuth
-    hashtagFeed(name: String, n: Int!): RekStream! @requireAuth
+    user(username: String!): User!
+    episode(id: Int!): Episode!
+    episodeShow(episodeId: String!, rekId: String): EpisodeShow!
+    search(term: String!, type: String!, n: Int): SearchResults
+    reks(n: Int!, userId: String, feed: Boolean): RekStream!
+    users(n: Int!, userId: String, followers: Boolean, following: Boolean): UserStream!
+    bookmarks(n: Int!, userId: String): BookmarkStream!
+    podcast(slug: String, id: String): Podcast!
+    hashtag(name: String): Hashtag
+    hashtagFeed(name: String, n: Int!): RekStream!
     notifications(n: Int!): NotificationStream! @requireAuth
   }
 
@@ -233,7 +245,7 @@ const typeDefs = gql`
     createRek(episodeId: String!, tweetRek: Boolean!, tags: [TagInput], walletSatoshis: Int, invoiceSatoshis: Int): Invoice! @requireAuth
     createPodcast(title: String, rss: String, description: String, email: String, website: String, image: String): Podcast! @requireAuth
     createEpisodes(episodes: [EpisodeInput], podcastId: String!): [Episode] @requireAuth
-    createUser(email: String!, username: String!, password: String!): LogInResponse!
+    createUser(email: String!, username: String!, password: String!, rekId: String): LogInResponse!
     updateUser(email: String, username: String, password: String, profilePic: Upload): User! @requireAuth
     logIn(username: String!, password: String!): LogInResponse!
     confirmEmail(token: String!): EmailVerification!
@@ -241,6 +253,8 @@ const typeDefs = gql`
     resendPodcastEmail(podcastId: String!): Boolean!
     twitterToken: String!
     twitterAccessToken(requestToken: String!, oathVerifier: String!): TwitterResponse!
+    guestShare(percentage: Float!, podcastId: String!): Boolean! @requireAuth
+    tagGuest(userIds: [String!], episodeIds: [String!], podcastId: String!): Boolean! @requireAuth
   }
 `;
 

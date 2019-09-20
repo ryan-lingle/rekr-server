@@ -81,6 +81,10 @@ module.exports = (sequelize, DataTypes) => {
       },
       viewedReks: async function() {
         return await this.getRek_views();
+      },
+      hasPodcast: async function() {
+        const podcasts = await this.getPodcasts();
+        return podcasts.length > 0;
       }
     },
     hooks: {
@@ -132,6 +136,12 @@ module.exports = (sequelize, DataTypes) => {
       through: models.hashtag_follow,
       as: 'followedHashtags',
       foreignKey: 'followerId',
+    });
+
+    user.belongsToMany(models.episode, {
+      through: models.guest_tag,
+      as: 'guestAppearances',
+      foreignKey: 'userId',
     });
   };
 

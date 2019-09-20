@@ -68,6 +68,11 @@ module.exports = {
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE
+      },
+      guestShare: {
+        type: Sequelize.FLOAT,
+        allowNull: false,
+        defaultValue: 0
       }
     });
   },

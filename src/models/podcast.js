@@ -36,12 +36,36 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     itunesId: DataTypes.INTEGER,
+    guestShare: DataTypes.FLOAT
   }, {
     getterMethods: {
       latestEpisodeDate: async function() {
         const ep = await this.getEpisodes({ order: [['released', 'DESC']]})
         return ep[0] && ep[0].released;
+      },
+
+      donationSum: async function() {
+        const result = await sequelize.query(`
+          SELECT SUM(reks.satoshis)
+          FROM reks
+          INNER JOIN episodes on episodes.id = reks."episodeId"
+          INNER JOIN podcasts on podcasts.id = episodes."podcastId"
+          WHERE podcasts.id = ${this.id};
+        `);
+        return result[0][0].sum || 0;
+      },
+
+      donationCount: async function() {
+        const result = await sequelize.query(`
+          SELECT COUNT(*)
+          FROM reks
+          INNER JOIN episodes on episodes.id = reks."episodeId"
+          INNER JOIN podcasts on podcasts.id = episodes."podcastId"
+          WHERE podcasts.id = ${this.id};
+        `);
+        return result[0][0].count || 0;
       }
+
     },
     hooks: {
       beforeCreate: async function(podcast) {
@@ -79,7 +103,7 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'cascade',
       hooks: true,
     });
-    podcast.belongsTo(models.user)
+    podcast.belongsTo(models.user);
   };
 
   podcast.search = async function({ term, offset }) {

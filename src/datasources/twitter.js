@@ -26,7 +26,7 @@ class Twitter {
     });
   };
 
-  // refactor this shit lol
+  // refactor this shit
   async accessToken({ requestToken, oathVerifier, id }) {
     const { token, secret } = await TwitterCredentials.findOne({ where: { token: requestToken }});
     return new Promise((resolve, reject) => {
@@ -66,7 +66,14 @@ class Twitter {
                   });
                 }
                 const token = Jwt.sign(user.id.toString());
-                resolve({ id: user.id, signIn: true, token, profilePic: user.profilePic, username: user.username });
+                const hasPodcast = await user.hasPodcast;
+                resolve({
+                  id: user.id,
+                  signIn: true, token,
+                  profilePic: user.profilePic,
+                  username: user.username,
+                  hasPodcast
+                });
               }
             }
           });

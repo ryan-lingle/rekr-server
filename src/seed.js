@@ -244,6 +244,6 @@ async function createReks() {
 }
 
 function randomSats() {
-  return Math.floor(10000 * Math.random());
+  return Math.floor(10000 * Math.random()) + 101;
 }
 
