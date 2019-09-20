@@ -13,6 +13,9 @@ module.exports = {
         allowNull: false,
         defaultValue: 0
       },
+      bio: {
+        type: Sequelize.TEXT,
+      },
       email: {
         type: Sequelize.STRING,
         isEmail: true,

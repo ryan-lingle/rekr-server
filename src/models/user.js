@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
         async isUnique(username) {
           const _user = await user.findOne({where: { username }});
           if (_user) {
-            throw new Error('username must be unique.');
+            throw new Error('username is taken');
           }
         },
 
@@ -53,6 +53,16 @@ module.exports = (sequelize, DataTypes) => {
         async isPositive(satoshis) {
           if ((satoshis) < 0) {
             throw new Error('Not enough funds.')
+          }
+        }
+      }
+    },
+    bio: {
+      type: DataTypes.TEXT,
+      validate: {
+        async lessThan60Characters(bio) {
+          if (bio.length > 60) {
+            throw new Error('bio cannot be greater than 60 characters')
           }
         }
       }
@@ -150,25 +160,18 @@ module.exports = (sequelize, DataTypes) => {
     const RekView = sequelize.models.rek_view;
     const { Op } = Sequelize;
 
-    const following = await this.following;
-    const ids = following.stream.map(user => user.id);
+    const viewedReks = await this.viewedReks;
+    const viewedRekIds = viewedReks.map(view => view.rekId);
 
-    // const viewedReks = await this.viewedReks;
-    // const viewedRekIds = viewedReks.map(view => view.id);
-    ids.push(this.id);
-    const stream = await Rek.findAll({
-      where: {
-        userId: {
-          [Op.in]: ids
-        },
-        // id: {
-        //   [Op.in]: viewedRekIds
-        // }
-      },
-      order: [['valueGenerated', 'DESC']],
-      offset,
-      limit: 10
-    })
+    const stream = await sequelize.query(`
+      SELECT reks.id, reks."episodeId", reks."userId", reks.satoshis FROM reks
+      INNER JOIN user_follows ON reks."userId" = user_follows."followeeId"
+      WHERE user_follows."followerId" = ${this.id}
+      ORDER BY CASE WHEN reks.id NOT IN (${viewedRekIds.join(",") || 0}) THEN 0 ELSE 1 END, reks."valueGenerated" DESC
+      OFFSET ${offset}
+      LIMIT 10;
+    `, { model: Rek });
+
     const len = stream.length;
     const more = len == 10;
     return { stream, more }

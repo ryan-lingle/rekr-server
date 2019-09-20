@@ -330,13 +330,17 @@ module.exports = {
     },
     updateUser: async (args, { DB, id, dataSources }) => {
       const User = DB.user;
-      const { uploadFile } = dataSources.Images;
-      const { createReadStream } = await args.profilePic;
-      const stream = createReadStream();
-      const { Location } = await uploadFile(stream);
-
-      const user = await User.update({ profilePic: Location }, { where: { id }});
-      return await User.findByPk(id);
+      if (args.profilePic) {
+        const { uploadFile } = dataSources.Images;
+        const { createReadStream } = await args.profilePic;
+        const stream = createReadStream();
+        const { Location } = await uploadFile(stream);
+        args.profilePic = Location;
+      }
+      const user = await User.findByPk(id);
+      Object.keys(args).forEach(key => user[key] = args[key])
+      await user.save();
+      return user;
     },
     createUser: async (_, { email, username, password, rekId }, { DB }) => {
       const User = DB.user;

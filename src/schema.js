@@ -69,6 +69,7 @@ const typeDefs = gql`
     paymentMethod: String
     walletPermission: Boolean!
     canTweet: Boolean!
+    bio: String
   }
 
   type Episode {
@@ -246,7 +247,7 @@ const typeDefs = gql`
     createPodcast(title: String, rss: String, description: String, email: String, website: String, image: String): Podcast! @requireAuth
     createEpisodes(episodes: [EpisodeInput], podcastId: String!): [Episode] @requireAuth
     createUser(email: String!, username: String!, password: String!, rekId: String): LogInResponse!
-    updateUser(email: String, username: String, password: String, profilePic: Upload): User! @requireAuth
+    updateUser(email: String, username: String, password: String, profilePic: Upload, bio: String): User! @requireAuth
     logIn(username: String!, password: String!): LogInResponse!
     confirmEmail(token: String!): EmailVerification!
     resendUserEmail: Boolean!
