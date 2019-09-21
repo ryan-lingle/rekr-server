@@ -104,6 +104,7 @@ module.exports = {
       return { stream: reks }
     },
     followedByCurrentUser: async (parent, _, { DB, id }) => {
+      console.log(id);
       const HashtagFollow = DB.hashtag_follow;
       let exists;
       if (id != "null") exists = await HashtagFollow.findOne({ where: { hashtagId: parent.id, followerId: id }})
@@ -124,6 +125,12 @@ module.exports = {
     rek: async (parent, _, { DB }) => {
       const Rek = DB.rek;
       return await Rek.findByPk(parent.rekId);
+    }
+  },
+  HashtagFollow: {
+    hashtag: async (parent, _, { DB }) => {
+      const Hashtag = DB.hashtag;
+      return await Hashtag.findByPk(parent.hashtagId);
     }
   },
   Notification: {
@@ -255,7 +262,7 @@ module.exports = {
       const invoice = await getInvoice(satoshis, async (invoice) => {
         user.satoshis += satoshis;
         await user.save();
-        pubsub.publish('INVOICE_PAID', { userId: id, invoice })
+        f
       });
       return { invoice, satoshis }
     },
@@ -275,10 +282,10 @@ module.exports = {
 
       const exists = await Model.findOne({ where: args})
       if (exists == null) {
-        await Model.create(args)
+        await Model.create(args);
         return true;
       } else {
-        await Model.destroy({ where: args});
+        await Model.destroy({ where: args, individualHooks: true });
         return false;
       }
     },
@@ -492,6 +499,13 @@ module.exports = {
         return invoicePaid;
       },
       subscribe: () => pubsub.asyncIterator(["INVOICE_PAID"]),
+    },
+    hashtags: {
+      resolve: (hashtagFollow) => {
+        console.log(hashtagFollow);
+        return hashtagFollow;
+      },
+      subscribe: () => pubsub.asyncIterator(["HASHTAGS"]),
     }
   }
 }

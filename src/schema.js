@@ -216,8 +216,15 @@ const typeDefs = gql`
     episode: Episode!
   }
 
+  type HashtagFollow {
+    hashtag: Hashtag!
+    user: User!
+    follow: Boolean!
+  }
+
   type Subscription {
     invoicePaid(invoice: String!): InvoicePaid!
+    hashtags: HashtagFollow!
   }
 
   type Query {

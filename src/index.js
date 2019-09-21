@@ -15,6 +15,7 @@ const Images = require('./datasources/images');
 const Twitter = require('./dataSources/twitter');
 
 const AuthDirective = require('./auth/auth_directive');
+const Jwt = require("./auth/jwt");
 
 const PORT = 4000;
 const app = express();
@@ -22,7 +23,11 @@ const app = express();
 const server = new ApolloServer({
   context: async ({ req, connection }) => {
     if (connection) {
-      return { connection: connection.context, DB }
+      const { token, id } = connection.context;
+      if (!Jwt.verify(token, id)) {
+        throw new AuthenticationError("AUTH")
+      }
+      return { ...connection.context, DB }
     } else {
       const { token, id } = req.headers;
       return { DB, token, id };

@@ -116,7 +116,7 @@ module.exports = (sequelize, DataTypes) => {
   };
 
   rek.prototype.addTags = async function (tags) {
-    console.log(tags)
+    if (tags.length > 3) throw new Error("You can make a Maximum of 3 Tags.")
     const Hashtag = sequelize.models.hashtag;
     const Tag = sequelize.models.tag;
     const { id } = this;

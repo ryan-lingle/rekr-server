@@ -1,4 +1,6 @@
 'use strict';
+const { pubsub } = require('../pubsub');
+
 module.exports = (sequelize, DataTypes) => {
   const hashtag_follow = sequelize.define('hashtag_follow', {
     followerId: {
@@ -17,9 +19,16 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     hashtagId: DataTypes.INTEGER
-  }, {});
-  hashtag_follow.associate = function(models) {
-    // associations can be defined here
-  };
+  }, {
+    hooks: {
+      afterCreate: async function({ hashtagId, followerId }) {
+        pubsub.publish('HASHTAGS', { hashtagId, followerId, follow: true });
+      },
+
+      beforeDestroy: async function({ hashtagId, followerId }) {
+        pubsub.publish('HASHTAGS', { hashtagId, followerId, follow: false });
+      }
+    }
+  });
   return hashtag_follow;
 };

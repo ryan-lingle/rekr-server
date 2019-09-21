@@ -61,7 +61,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       validate: {
         async lessThan60Characters(bio) {
-          if (bio.length > 60) {
+          if (bio.length > 150) {
             throw new Error('bio cannot be greater than 60 characters')
           }
         }
@@ -167,6 +167,7 @@ module.exports = (sequelize, DataTypes) => {
       SELECT reks.id, reks."episodeId", reks."userId", reks.satoshis FROM reks
       INNER JOIN user_follows ON reks."userId" = user_follows."followeeId"
       WHERE user_follows."followerId" = ${this.id}
+      OR reks."userId" = ${this.id}
       ORDER BY CASE WHEN reks.id NOT IN (${viewedRekIds.join(",") || 0}) THEN 0 ELSE 1 END, reks."valueGenerated" DESC
       OFFSET ${offset}
       LIMIT 10;
