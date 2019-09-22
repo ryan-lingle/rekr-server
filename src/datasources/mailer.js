@@ -33,6 +33,29 @@ async function sendUserEmail({ username, email, token }) {
   sendEmail(mailOptions);
 }
 
+async function sendPasswordEmail({ username, email, token }) {
+  const mailOptions = {
+    from: 'hello@rekr.com',
+    to: 'lingleryan@gmail.com',
+    subject: 'Reset your Password',
+    html: `<div>
+             Hello ${username}!
+             <br></br>
+             <br></br>
+             Click the following link to update your password.
+             <br></br>
+             <br></br>
+             <a href="http://localhost:3000/password-reset/${token}" >Update your Password</a>
+             <br></br>
+             <br></br>
+             Best,
+             <br></br>
+             The Rekr Team
+           </div>`
+  };
+  sendEmail(mailOptions);
+}
+
 async function sendPodcastEmail({ title, email, token }) {
   const mailOptions = {
     from: 'hello@rekr.com',
@@ -67,4 +90,4 @@ function sendEmail(mailOptions) {
   });
 }
 
-module.exports = { sendUserEmail, sendPodcastEmail };
+module.exports = { sendUserEmail, sendPodcastEmail, sendPasswordEmail };

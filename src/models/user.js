@@ -1,7 +1,7 @@
 'use strict';
 const bcrypt = require("bcrypt");
 const Sequelize = require("sequelize");
-const { sendUserEmail } = require("../datasources/mailer");
+const { sendUserEmail, sendPasswordEmail } = require("../datasources/mailer");
 
 module.exports = (sequelize, DataTypes) => {
   const user = sequelize.define('user', {
@@ -73,6 +73,7 @@ module.exports = (sequelize, DataTypes) => {
     twitterKey: DataTypes.STRING,
     twitterSecret: DataTypes.STRING,
     canTweet: DataTypes.BOOLEAN,
+    passwordToken: DataTypes.STRING,
   }, {
     getterMethods: {
       followers: async function() {
@@ -167,7 +168,6 @@ module.exports = (sequelize, DataTypes) => {
       SELECT reks.id, reks."episodeId", reks."userId", reks.satoshis FROM reks
       INNER JOIN user_follows ON reks."userId" = user_follows."followeeId"
       WHERE user_follows."followerId" = ${this.id}
-      OR reks."userId" = ${this.id}
       ORDER BY CASE WHEN reks.id NOT IN (${viewedRekIds.join(",") || 0}) THEN 0 ELSE 1 END, reks."valueGenerated" DESC
       OFFSET ${offset}
       LIMIT 10;
@@ -190,6 +190,23 @@ module.exports = (sequelize, DataTypes) => {
 
   user.prototype.validPassword = async function(password) {
     return await bcrypt.compare(password, this.password);
+  }
+
+  user.prototype.resetPassword = async function(password) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(password, salt);
+    return await this.save();
+  }
+
+  user.prototype.passwordResetRequest = async function() {
+    const token = Math.random().toString(36).substr(2);
+    this.passwordToken = token;
+    await this.save();
+    await sendPasswordEmail({
+      username: this.username,
+      email: this.email,
+      token
+    });
   }
 
   user.search = async function({ term, offset }) {

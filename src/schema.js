@@ -253,7 +253,7 @@ const typeDefs = gql`
     createRek(episodeId: String!, tweetRek: Boolean!, tags: [TagInput], walletSatoshis: Int, invoiceSatoshis: Int): Invoice! @requireAuth
     createPodcast(title: String, rss: String, description: String, email: String, website: String, image: String): Podcast! @requireAuth
     createEpisodes(episodes: [EpisodeInput], podcastId: String!): [Episode] @requireAuth
-    createUser(email: String!, username: String!, password: String!, rekId: String): LogInResponse!
+    createUser(email: String!, username: String!, password: String!, passwordCopy: String!, rekId: String): LogInResponse!
     updateUser(email: String, username: String, password: String, profilePic: Upload, bio: String): User! @requireAuth
     logIn(username: String!, password: String!): LogInResponse!
     confirmEmail(token: String!): EmailVerification!
@@ -263,6 +263,8 @@ const typeDefs = gql`
     twitterAccessToken(requestToken: String!, oathVerifier: String!): TwitterResponse!
     guestShare(percentage: Float!, podcastId: String!): Boolean! @requireAuth
     tagGuest(userIds: [String!], episodeIds: [String!], podcastId: String!): Boolean! @requireAuth
+    resetPasswordRequest(email: String!): String!
+    resetPassword(token: String!, password: String!, passwordCopy: String!): Boolean!
   }
 `;
 

@@ -349,7 +349,9 @@ module.exports = {
       await user.save();
       return user;
     },
-    createUser: async (_, { email, username, password, rekId }, { DB }) => {
+    createUser: async (_, { email, username, password, passwordCopy, rekId }, { DB }) => {
+      if (password !== passwordCopy) throw new Error('Passwords do not match.');
+
       const User = DB.user;
       const RekView = DB.rek_view;
 
@@ -490,6 +492,21 @@ module.exports = {
           GuestTag.create({ userId, episodeId });
         })
       })
+      return true;
+    },
+    resetPasswordRequest: async (_, { email }, { DB }) => {
+      const User = DB.user;
+      const user = await User.findOne({ where: { email }});
+      if (!user) throw new Error('No User with that Email.');
+      await user.passwordResetRequest();
+      return email;
+    },
+    resetPassword: async (_, { token, password, passwordCopy }, { DB }) => {
+      if (password !== passwordCopy) throw new Error('Passwords do not match.');
+      const User = DB.user;
+      const user = await User.findOne({ where: { passwordToken: token }});
+      if (!user) throw new Error('Invalid Link');
+      await user.resetPassword(password);
       return true;
     }
   },
