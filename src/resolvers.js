@@ -10,7 +10,7 @@ module.exports = {
     current: async(parent, _, { id }) => {
       return parent.id == id;
     },
-    podcasts: async (parent, _, { DB }) => {
+    podcasts: async (parent, { DB }) => {
       const Podcast = DB.podcast;
       return await Podcast.findAll({ where: { userId: parent.id }, order: [['id']]});
     },
@@ -20,11 +20,6 @@ module.exports = {
       const stream = await Rek.findAll({ where: { userId: parent.id }, order: [['id', 'DESC']], limit: 10 });
       const more = stream.length == 10;
       return { stream, more, count };
-    },
-    feed: async (parent, _, { DB }) => {
-      const User = DB.user;
-      const user = await User.findByPk(parent.id);
-      return await user.getFeed({});
     },
     bookmarks: async (parent, _, { DB }) => {
       const Bookmark = DB.bookmark;
@@ -262,7 +257,6 @@ module.exports = {
       const invoice = await getInvoice(satoshis, async (invoice) => {
         user.satoshis += satoshis;
         await user.save();
-        f
       });
       return { invoice, satoshis }
     },
@@ -393,12 +387,16 @@ module.exports = {
       const Episode = DB.episode;
 
       const itunesId = await ListenNotes.itunesIdByRss(rss) || null;
-
+      if (!itunesId) throw new Error('This does not seem to be a Itunes verified RSS Feed.');
       const podcasts = await Podcast.findOrCreate({ where: {
         title, description, rss, email,
-        website, itunesId, image
+        website, image, itunesId
       }});
-
+      if (podcasts[0].emailVerified) {
+        throw new Error('This podcast has already been claimed.')
+      } else {
+        podcasts[0].sendEmail();
+      }
       return podcasts[0];
     },
     createEpisodes: async ({ episodes, podcastId }, { DB }) => {
@@ -476,14 +474,17 @@ module.exports = {
     },
     guestShare: async ({ percentage, podcastId }, { DB, id }) => {
       const Podcast = DB.podcast;
-      const podcast = await Podcast.update({
-        guestShare: percentage
-      }, { where: { id: podcastId, userId: id }});
-
+      const podcast = await Podcast.findByPk(podcastId);
+      if (podcast.userId != id) throw new Error('Not Authorized');
+      podcast.guestShare = percentage;
+      await podcast.save();
       return true;
     },
-    tagGuest: async ({ userIds, episodeIds }, { DB, id }) => {
+    tagGuest: async ({ userIds, episodeIds, podcastId }, { DB, id }) => {
       const GuestTag = DB.guest_tag;
+      const Podcast = DB.podcast;
+      const podcast = await Podcast.findByPk(podcastId);
+      if (podcast.userId != id) throw new Error('Not Authorized');
       if (episodeIds.length === 1) {
         await GuestTag.destroy({ where: { episodeId: episodeIds[0] }})
       }

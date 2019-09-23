@@ -14,7 +14,7 @@ const Lightning = require('./datasources/lnd');
 const Images = require('./datasources/images');
 const Twitter = require('./dataSources/twitter');
 
-const AuthDirective = require('./auth/auth_directive');
+const { AuthenticationDirective, AuthorizationDirective } = require('./auth/auth_directive');
 const Jwt = require("./auth/jwt");
 
 const PORT = 4000;
@@ -36,7 +36,8 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
   schemaDirectives: {
-    requireAuth: AuthDirective
+    authenticate: AuthenticationDirective,
+    authorize: AuthorizationDirective
   },
   dataSources: () => ({
     RssFeed,

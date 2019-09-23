@@ -92,8 +92,6 @@ module.exports = (sequelize, DataTypes) => {
             episode = episodes.shift();
           }
         })
-
-        sendPodcastEmail(podcast);
       }
     }
   });
@@ -105,6 +103,10 @@ module.exports = (sequelize, DataTypes) => {
     });
     podcast.belongsTo(models.user);
   };
+
+  podcast.prototype.sendEmail = async function() {
+    sendPodcastEmail(this);
+  }
 
   podcast.search = async function({ term, offset }) {
     const split = term.split(' ');

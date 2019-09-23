@@ -1,7 +1,8 @@
 const { gql } = require('apollo-server-express');
 
 const typeDefs = gql`
-  directive @requireAuth on FIELD_DEFINITION
+  directive @authenticate on FIELD_DEFINITION
+  directive @authorize on FIELD_DEFINITION
 
   scalar Date
 
@@ -50,25 +51,22 @@ const typeDefs = gql`
   type User {
     id: ID!
     current: Boolean!
-    satoshis: Int!
+    satoshis: Int @authorize
     username: String!
-    email: String
-    emailVerified: Boolean!
-    password: String
+    email: String @authorize
+    emailVerified: Boolean @authorize
+    password: String @authorize
     profilePic: String
-    podcasts: [Podcast]
+    podcasts: [Podcast] @authorize
     reks: RekStream!
     bookmarks: BookmarkStream!
     followers: UserStream!
     following: UserStream!
-    feed: RekStream!
-    notifications: [Notification]
-    rek_views: [RekView]
+    notifications: [Notification] @authorize
+    rek_views: [RekView] @authorize
     followedHashtags: [Hashtag]
     followedByCurrentUser: Boolean!
-    paymentMethod: String
-    walletPermission: Boolean!
-    canTweet: Boolean!
+    canTweet: Boolean @authorize
     bio: String
   }
 
@@ -98,7 +96,7 @@ const typeDefs = gql`
     latestEpisodeDate: Date
     donationSum: Int
     donationCount: Int
-    guestShare: Float!
+    guestShare: Float! @authorize
   }
 
   type Rek {
@@ -228,7 +226,7 @@ const typeDefs = gql`
   }
 
   type Query {
-    currentUser: User! @requireAuth
+    currentUser: User! @authenticate
     user(username: String!): User!
     episode(id: Int!): Episode!
     episodeShow(episodeId: String!, rekId: String): EpisodeShow!
@@ -239,30 +237,30 @@ const typeDefs = gql`
     podcast(slug: String, id: String): Podcast!
     hashtag(name: String): Hashtag
     hashtagFeed(name: String, n: Int!): RekStream!
-    notifications(n: Int!): NotificationStream! @requireAuth
+    notifications(n: Int!): NotificationStream! @authenticate
   }
 
   type Mutation {
-    parsePodcast(rssUrl: String!): Podcast! @requireAuth
-    deposit(satoshis: Int!): Invoice! @requireAuth
-    withdraw(invoice: String!): WithdrawResponse! @requireAuth
-    toggleFollow(followeeId: String, hashtagId: String, type: String): Boolean! @requireAuth
-    createRekView(rekId: Int!): RekView! @requireAuth
-    createBookmark(episodeId: String!, rekId: String): BookmarkResponse! @requireAuth
-    destroyBookmark(episodeId: String!, rekId: String): BookmarkResponse! @requireAuth
-    createRek(episodeId: String!, tweetRek: Boolean!, tags: [TagInput], walletSatoshis: Int, invoiceSatoshis: Int): Invoice! @requireAuth
-    createPodcast(title: String, rss: String, description: String, email: String, website: String, image: String): Podcast! @requireAuth
-    createEpisodes(episodes: [EpisodeInput], podcastId: String!): [Episode] @requireAuth
+    parsePodcast(rssUrl: String!): Podcast! @authenticate
+    deposit(satoshis: Int!): Invoice! @authenticate
+    withdraw(invoice: String!): WithdrawResponse! @authenticate
+    toggleFollow(followeeId: String, hashtagId: String, type: String): Boolean! @authenticate
+    createRekView(rekId: Int!): RekView! @authenticate
+    createBookmark(episodeId: String!, rekId: String): BookmarkResponse! @authenticate
+    destroyBookmark(episodeId: String!, rekId: String): BookmarkResponse! @authenticate
+    createRek(episodeId: String!, tweetRek: Boolean!, tags: [TagInput], walletSatoshis: Int, invoiceSatoshis: Int): Invoice! @authenticate
+    createPodcast(title: String, rss: String, description: String, email: String, website: String, image: String): Podcast! @authenticate
+    createEpisodes(episodes: [EpisodeInput], podcastId: String!): [Episode] @authenticate
     createUser(email: String!, username: String!, password: String!, passwordCopy: String!, rekId: String): LogInResponse!
-    updateUser(email: String, username: String, password: String, profilePic: Upload, bio: String): User! @requireAuth
+    updateUser(email: String, username: String, password: String, profilePic: Upload, bio: String): User! @authenticate
     logIn(username: String!, password: String!): LogInResponse!
     confirmEmail(token: String!): EmailVerification!
     resendUserEmail: Boolean!
     resendPodcastEmail(podcastId: String!): Boolean!
     twitterToken: String!
     twitterAccessToken(requestToken: String!, oathVerifier: String!): TwitterResponse!
-    guestShare(percentage: Float!, podcastId: String!): Boolean! @requireAuth
-    tagGuest(userIds: [String!], episodeIds: [String!], podcastId: String!): Boolean! @requireAuth
+    guestShare(percentage: Float!, podcastId: String!): Boolean! @authenticate
+    tagGuest(userIds: [String!], episodeIds: [String!], podcastId: String!): Boolean! @authenticate
     resetPasswordRequest(email: String!): String!
     resetPassword(token: String!, password: String!, passwordCopy: String!): Boolean!
   }

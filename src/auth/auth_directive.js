@@ -4,7 +4,7 @@ const {
 } = require("apollo-server-express");
 const Jwt = require("./jwt");
 
-class AuthDirective extends SchemaDirectiveVisitor {
+class AuthenticationDirective extends SchemaDirectiveVisitor {
   visitFieldDefinition(field) {
     const { resolve = defaultFieldResolver } = field;
     field.resolve = async function (src, args, { token, id, DB, ...context }, info) {
@@ -23,4 +23,16 @@ class AuthDirective extends SchemaDirectiveVisitor {
   }
 }
 
-module.exports = AuthDirective;
+class AuthorizationDirective extends SchemaDirectiveVisitor {
+  visitFieldDefinition(field) {
+    const { resolve } = field;
+    field.resolve = async function (src, args, { id, ...context }, info) {
+      if (src.id == id || src.userId == id) {
+        if (resolve) return await resolve.call(null, src, {id, ...context});
+        return src[info.fieldName];
+      }
+    }
+  }
+}
+
+module.exports = { AuthenticationDirective, AuthorizationDirective };
