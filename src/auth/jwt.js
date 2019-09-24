@@ -7,16 +7,11 @@ let publicKEY  =  process.env.PUBLIC_KEY;
 
 if (!privateKEY) {
   privateKEY = fs.readFileSync('./private.key', 'utf8');
-  publicKEY = fs.readFileSync('./private.key', 'utf8');
+  publicKEY = fs.readFileSync('./public.key', 'utf8');
 }
 
 module.exports = {
  sign: (clientId) => {
-  /*
-   sOptions = {
-    audience: "Client_Identity" // this should be provided by client
-   }
-  */
   // Token signing options
   const signOptions = {
     audience:  clientId,
@@ -26,11 +21,6 @@ module.exports = {
   return jwt.sign({}, privateKEY, signOptions);
 },
 verify: (token, clientId) => {
-  /*
-   vOption = {
-    audience: "Client_Identity" // this should be provided by client
-   }
-  */
   const verifyOptions = {
     audience:  clientId,
     expiresIn:  "30d",

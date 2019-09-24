@@ -197,7 +197,7 @@ module.exports = (sequelize, DataTypes) => {
   }
 
   async function whiteListCharacters(name) {
-    const whitelisted = "qwertyuiopasdfghjklzxcvbnm_1234567890$"
+    const whitelisted = "qwertyuiopasdfghjklzxcvbnm_-1234567890$"
     name.split('').forEach(s => {
       if (!whitelisted.includes(s.toLowerCase())) {
         throw new Error(`hashtag cannot contain ${s}`)
