@@ -4,8 +4,8 @@ const { ApolloServer } = require('apollo-server-express');
 const { createServer } = require('http');
 const typeDefs = require('./schema');
 
-const resolvers = require('./resolvers');
 const DB = require('./models');
+const resolvers = require('./resolvers');
 
 const ItunesApi = require('./datasources/itunes');
 const RssFeed = require('./datasources/rss_feed');
@@ -42,7 +42,7 @@ const server = new ApolloServer({
     RssFeed,
     Lightning,
     Images,
-    Twitter,
+    Twitter: new Twitter(),
     Itunes: new ItunesApi(),
     ListenNotes: new ListenNotes(),
   })

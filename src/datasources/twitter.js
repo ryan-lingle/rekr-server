@@ -1,25 +1,23 @@
 const twitterAPI = require('node-twitter-api');
 const Jwt = require("../auth/jwt");
-const DB = require('../models');
-const TwitterCredentials = DB.twitter_credentials;
-const User = DB.user;
 
 class Twitter {
   constructor() {
     this.twitter = new twitterAPI({
       consumerKey: process.env.TWITTER_KEY,
       consumerSecret: process.env.TWITTER_SECRET,
-      callback: process.env.TWITTER_CALLBACK
+      callback: process.env.CLIENT_DOMAIN + "/auth/twitter/callback"
     });
   }
 
   async requestToken() {
+    const DB = require('../models');
     return new Promise((resolve, reject) => {
       this.twitter.getRequestToken(function(error, token, secret, results){
         if (error) {
           reject(error);
         } else {
-          TwitterCredentials.create({ token, secret })
+          DB.twitter_credentials.create({ token, secret })
           resolve(token);
         }
       });
@@ -28,6 +26,10 @@ class Twitter {
 
   // refactor this shit
   async accessToken({ requestToken, oathVerifier, id }) {
+    const DB = require("../models");
+    const TwitterCredentials = DB.twitter_credentials;
+    const User = DB.user;
+
     const { token, secret } = await TwitterCredentials.findOne({ where: { token: requestToken }});
     return new Promise((resolve, reject) => {
       this.twitter.getAccessToken(token, secret, oathVerifier, (error, accessToken, accessTokenSecret, results) => {
@@ -101,4 +103,4 @@ class Twitter {
   }
 };
 
-module.exports = new Twitter();
+module.exports = Twitter;

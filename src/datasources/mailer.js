@@ -21,7 +21,7 @@ async function sendUserEmail({ username, email, token }) {
              to verify your email address:
              <br></br>
              <br></br>
-             <a href="http://localhost:3000/confirm_email/${token}" >Verify Your Email Address</a>
+             <a href="${process.env.CLIENT_DOMAIN}/confirm_email/${token}" >Verify Your Email Address</a>
              <br></br>
              <br></br>
              Best,
@@ -45,7 +45,7 @@ async function sendPasswordEmail({ username, email, token }) {
              Click the following link to update your password.
              <br></br>
              <br></br>
-             <a href="http://localhost:3000/password-reset/${token}" >Update your Password</a>
+             <a href="${process.env.CLIENT_DOMAIN}/password-reset/${token}" >Update your Password</a>
              <br></br>
              <br></br>
              Best,
@@ -69,7 +69,7 @@ async function sendPodcastEmail({ title, email, token }) {
              to verify your email address:
              <br></br>
              <br></br>
-             <a href="http://localhost:3000/confirm_email/${token}" >Verify Your Email Address</a>
+             <a href="${process.env.CLIENT_DOMAIN}/confirm_email/${token}" >Verify Your Email Address</a>
              <br></br>
              <br></br>
              Best,
