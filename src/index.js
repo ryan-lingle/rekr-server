@@ -12,7 +12,7 @@ const RssFeed = require('./datasources/rss_feed');
 const ListenNotes = require('./datasources/listen_notes');
 const Lightning = require('./datasources/lnd');
 const Images = require('./datasources/images');
-const Twitter = require('./dataSources/twitter');
+const Twitter = require('./datasources/twitter');
 
 const { AuthenticationDirective, AuthorizationDirective } = require('./auth/auth_directive');
 const Jwt = require("./auth/jwt");
