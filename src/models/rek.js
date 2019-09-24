@@ -1,6 +1,6 @@
 'use strict';
 const { inOneMonth } = require('../datasources/scheduler');
-const { composeTweet } = require('../datasources/twitter');
+const Twitter = require('../datasources/twitter');
 
 module.exports = (sequelize, DataTypes) => {
   const rek = sequelize.define('rek', {
@@ -193,7 +193,8 @@ module.exports = (sequelize, DataTypes) => {
     const episode = await rek.getEpisode();
     const podcast = await episode.getPodcast();
     const status = `I just donated ${rek.satoshis} Satoshis to ${episode.title} (${podcast.title}) on Rekr. ${process.env.CLIENT_DOMAIN}/episode/${episode.id}?rekId=${rek.id}&saveRek=1`;
-    composeTweet({ status, id: rek.userId });
+    const twitter = new Twitter();
+    twitter.composeTweet({ status, id: rek.userId });
   }
 
   async function whiteListCharacters(name) {
