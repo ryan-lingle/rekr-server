@@ -17,7 +17,6 @@ const Twitter = require('./dataSources/twitter');
 const { AuthenticationDirective, AuthorizationDirective } = require('./auth/auth_directive');
 const Jwt = require("./auth/jwt");
 
-const PORT = 4000;
 const app = express();
 
 const server = new ApolloServer({
@@ -57,7 +56,7 @@ const httpServer = createServer(app);
 server.installSubscriptionHandlers(httpServer);
 
 
-httpServer.listen(PORT, () => {
-  console.log(`🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`);
-  console.log(`🚀 Subscriptions ready at ws://localhost:${PORT}${server.subscriptionsPath}`);
+httpServer.listen(process.env.PORT, () => {
+  console.log(`🚀 Server ready at http://localhost:${process.env.PORT}${server.graphqlPath}`);
+  console.log(`🚀 Subscriptions ready at ws://localhost:${process.env.PORT}${server.subscriptionsPath}`);
 });
