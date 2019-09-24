@@ -82,7 +82,7 @@ class Twitter {
     });
   };
 
-  composeTweet = async ({ status, id }) => {
+  async composeTweet({ status, id }) {
     const DB = require('../models');
     const user = await DB.user.findByPk(id);
     this.twitter.statuses("update", {
