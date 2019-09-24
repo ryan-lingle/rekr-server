@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
         },
 
         async whiteListCharacter(username) {
-          const whitelisted = "qwertyuiopasdfghjklzxcvbnm?!_1234567890$"
+          const whitelisted = "qwertyuiopasdfghjklzxcvbnm_1234567890$"
           username.split('').forEach(s => {
             if (!whitelisted.includes(s.toLowerCase())) {
               throw new Error(`username cannot contain ${s}`)

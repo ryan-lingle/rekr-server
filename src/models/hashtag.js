@@ -1,7 +1,19 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
   const hashtag = sequelize.define('hashtag', {
-    name: DataTypes.STRING
+    name: {
+      type: DataTypes.STRING,
+      validate: {
+        async whiteListCharacter(name) {
+          const whitelisted = "qwertyuiopasdfghjklzxcvbnm_1234567890$"
+          name.split('').forEach(s => {
+            if (!whitelisted.includes(s.toLowerCase())) {
+              throw new Error(`hashtag cannot contain ${s}`)
+            }
+          })
+        }
+      }
+    }
   }, {
     getterMethods: {
       followers: async function() {

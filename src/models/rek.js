@@ -115,8 +115,17 @@ module.exports = (sequelize, DataTypes) => {
 
   };
 
-  rek.prototype.addTags = async function (tags) {
+  rek.prototype.validateTags = async function (tags) {
     if (tags.length > 3) throw new Error("You can make a Maximum of 3 Tags.")
+    const Hashtag = sequelize.models.hashtag;
+    const Tag = sequelize.models.tag;
+    const { id } = this;
+    return await Promise.all(tags.filter(onlyUnique).map(async ({ name }) => {
+      return await whiteListCharacters(name);
+    }));
+  }
+
+  rek.prototype.addTags = async function (tags) {
     const Hashtag = sequelize.models.hashtag;
     const Tag = sequelize.models.tag;
     const { id } = this;
@@ -185,6 +194,15 @@ module.exports = (sequelize, DataTypes) => {
     const podcast = await episode.getPodcast();
     const status = `I just donated ${rek.satoshis} Satoshis to ${episode.title} (${podcast.title}) on Rekr. http://localhost:3000/episode/${episode.id}?rekId=${rek.id}&saveRek=1`;
     composeTweet({ status, id: rek.userId });
+  }
+
+  async function whiteListCharacters(name) {
+    const whitelisted = "qwertyuiopasdfghjklzxcvbnm_1234567890$"
+    name.split('').forEach(s => {
+      if (!whitelisted.includes(s.toLowerCase())) {
+        throw new Error(`hashtag cannot contain ${s}`)
+      }
+    })
   }
 
   return rek;

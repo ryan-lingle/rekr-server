@@ -99,7 +99,6 @@ module.exports = {
       return { stream: reks }
     },
     followedByCurrentUser: async (parent, _, { DB, id }) => {
-      console.log(id);
       const HashtagFollow = DB.hashtag_follow;
       let exists;
       if (id != "null") exists = await HashtagFollow.findOne({ where: { hashtagId: parent.id, followerId: id }})
@@ -285,29 +284,30 @@ module.exports = {
     },
     createRek: async ({ episodeId, tweetRek, tags, walletSatoshis = 0, invoiceSatoshis = 0 }, { DB, dataSources, id }) => {
       const Rek = DB.rek;
+      const User = DB.user;
+      const { getInvoice } = dataSources.Lightning;
+      const user = await User.findByPk(id);
 
-      const rek = {
+      const rek = Rek.build({
         episodeId,
         tweetRek,
         userId: id,
-      };
-
-      // remove wallet satoshis
-      const User = DB.user;
-      const user = await User.findByPk(id);
+      });
+      await rek.validateTags(tags);
 
       let invoice;
       if (invoiceSatoshis > 0) {
-        const { getInvoice } = dataSources.Lightning;
+        rek.satoshis = invoiceSatoshis + walletSatoshis;
+        rek.valueGenerated = rek.satoshis;
+        await rek.validate();
         invoice = await getInvoice(invoiceSatoshis, async (invoice) => {
           user.satoshis = user.satoshis - walletSatoshis;
           await user.save();
 
           rek.invoice = invoice;
-          rek.satoshis = invoiceSatoshis + walletSatoshis;
-          rek.valueGenerated = rek.satoshis;
-          const newRek = await Rek.create(rek);
-          await newRek.addTags(tags);
+          await rek.save();
+          await rek.addTags(tags);
+
           pubsub.publish('INVOICE_PAID', { userId: id, invoice })
         });
       } else {
@@ -316,10 +316,8 @@ module.exports = {
 
         rek.satoshis = walletSatoshis;
         rek.valueGenerated = rek.satoshis;
-
-        const newRek = await Rek.create(rek);
-        await newRek.addTags(tags);
-        return newRek;
+        await rek.save();
+        await rek.addTags(tags);
       }
 
       return { invoice, satoshis: invoiceSatoshis }
@@ -520,7 +518,6 @@ module.exports = {
     },
     hashtags: {
       resolve: (hashtagFollow) => {
-        console.log(hashtagFollow);
         return hashtagFollow;
       },
       subscribe: () => pubsub.asyncIterator(["HASHTAGS"]),

@@ -235,7 +235,7 @@ const typeDefs = gql`
     users(n: Int!, userId: String, followers: Boolean, following: Boolean): UserStream!
     bookmarks(n: Int!, userId: String): BookmarkStream!
     podcast(slug: String, id: String): Podcast!
-    hashtag(name: String): Hashtag
+    hashtag(name: String): Hashtag!
     hashtagFeed(name: String, n: Int!): RekStream!
     notifications(n: Int!): NotificationStream! @authenticate
   }
