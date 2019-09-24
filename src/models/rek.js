@@ -192,7 +192,7 @@ module.exports = (sequelize, DataTypes) => {
   async function tweetRek(rek) {
     const episode = await rek.getEpisode();
     const podcast = await episode.getPodcast();
-    const status = `I just donated ${rek.satoshis} Satoshis to ${episode.title} (${podcast.title}) on Rekr. http://localhost:3000/episode/${episode.id}?rekId=${rek.id}&saveRek=1`;
+    const status = `I just donated ${rek.satoshis} Satoshis to ${episode.title} (${podcast.title}) on Rekr. ${process.env.process.env.CLIENT_DOMAIN}/episode/${episode.id}?rekId=${rek.id}&saveRek=1`;
     composeTweet({ status, id: rek.userId });
   }
 
