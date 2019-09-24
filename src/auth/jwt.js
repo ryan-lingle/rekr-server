@@ -2,8 +2,8 @@ const fs   = require('fs');
 const jwt   = require('jsonwebtoken');
 
 // use 'utf8' to get string instead of byte array  (512 bit key)
-let privateKEY  = process.env.privateKEY;
-let publicKEY  =  process.env.publicKEY;
+let privateKEY  = process.env.PRIVATE_KEY;
+let publicKEY  =  process.env.PUBLIC_KEY;
 
 if (!privateKEY) {
   privateKEY = fs.readFileSync('./private.key', 'utf8');
