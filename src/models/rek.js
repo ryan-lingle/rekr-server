@@ -132,7 +132,7 @@ module.exports = (sequelize, DataTypes) => {
     const Tag = sequelize.models.tag;
     const { id } = this;
     return await Promise.all(tags.filter(onlyUnique).map(async ({ name }) => {
-      const res = await Hashtag.findOrCreate({ where: { name }});
+      const res = await Hashtag.findOrCreate({ where: { name: name.toLowerCase() }});
       const hashtag = res[0];
       return await Tag.create({ rekId: id, hashtagId: hashtag.id });
     }));
