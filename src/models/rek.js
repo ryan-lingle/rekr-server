@@ -24,6 +24,8 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     hooks: {
       afterCreate: async function(rek) {
+        rek.increaseValueGenerated(rek.satoshis);
+
         const Rek = sequelize.models.rek;
         const RekView = sequelize.models.rek_view;
         const RekRelationship = sequelize.models.rek_relationships;
@@ -150,6 +152,16 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
 
+  rek.prototype.increaseValueGenerated = async function (newSats) {
+    this.valueGenerated = this.valueGenerated + newSats;
+    this.monthValueGenerated = this.monthValueGenerated + newSats;
+    await this.save();
+    inOneMonth(() => {
+      this.monthValueGenerated = this.monthValueGenerated - newSats;
+      this.save();
+    });
+  }
+
   async function updateValueGenerated(rek) {
     const tree = await rek.tree();
     const coefficients = {};
@@ -164,14 +176,7 @@ module.exports = (sequelize, DataTypes) => {
     Object.keys(coefficients).forEach(id => {
       Rek.findByPk(id).then(rek => {
         const val = Math.floor(satoshis * coefficients[id]);
-        rek.valueGenerated = rek.valueGenerated + val;
-        rek.monthValueGenerated = rek.monthValueGenerated + val;
-
-        rek.save();
-        inOneMonth(() => {
-          rek.monthValueGenerated = rek.monthValueGenerated - val;
-          rek.save();
-        })
+        rek.increaseValueGenerated(val);
       })
     })
   }

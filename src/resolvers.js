@@ -298,7 +298,6 @@ module.exports = {
       let invoice;
       if (invoiceSatoshis > 0) {
         rek.satoshis = invoiceSatoshis + walletSatoshis;
-        rek.valueGenerated = rek.satoshis;
         await rek.validate();
         invoice = await getInvoice(invoiceSatoshis, async (invoice) => {
           user.satoshis = user.satoshis - walletSatoshis;
@@ -315,7 +314,6 @@ module.exports = {
         await user.save();
 
         rek.satoshis = walletSatoshis;
-        rek.valueGenerated = rek.satoshis;
         await rek.save();
         await rek.addTags(tags);
       }

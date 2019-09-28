@@ -9,6 +9,13 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       validate: {
         isEmail: true,
+
+        async isUnique(email) {
+          const _user = await user.findOne({ where: { email } });
+          if (_user) {
+            throw new Error('email is taken');
+          }
+        },
       }
     },
     emailVerified: DataTypes.BOOLEAN,
@@ -164,10 +171,14 @@ module.exports = (sequelize, DataTypes) => {
     const viewedReks = await this.viewedReks;
     const viewedRekIds = viewedReks.map(view => view.rekId);
 
+    const _f_ = await this.followers;
+    const aFollowerId = _f_.stream[0] ? _f_.stream[0].id : 1;
+
     const stream = await sequelize.query(`
       SELECT reks.id, reks."episodeId", reks."userId", reks.satoshis FROM reks
       INNER JOIN user_follows ON reks."userId" = user_follows."followeeId"
       WHERE user_follows."followerId" = ${this.id}
+      OR reks."userId" = ${this.id} AND user_follows."followerId" = ${aFollowerId}
       ORDER BY CASE WHEN reks.id NOT IN (${viewedRekIds.join(",") || 0}) THEN 0 ELSE 1 END, reks."valueGenerated" DESC
       OFFSET ${offset}
       LIMIT 10;

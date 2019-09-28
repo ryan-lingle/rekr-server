@@ -5,85 +5,85 @@ const users = [
   {
     username: "chef",
     password: "password",
-    email: "email@email.com",
+    email: "email1@email.com",
     profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/i_amm_nobody.jpg"
   },
   {
     username: "PeterMcCormack",
     password: "password",
-    email: "email@email.com",
+    email: "email2@email.com",
     profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/PeterMcCormack.png"
   },
   {
     username: "bitstein",
     password: "password",
-    email: "email@email.com",
+    email: "email3@email.com",
     profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/bitstein.jpg"
   },
   {
     username: "pierre_rochard",
     password: "password",
-    email: "email@email.com",
+    email: "email4@email.com",
     profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/pierre_rochard.jpg"
   },
   {
     username: "MartyBent",
     password: "password",
-    email: "email@email.com",
+    email: "email5@email.com",
     profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/MartyBent.jpg"
   },
   {
     username: "matt_odell",
     password: "password",
-    email: "email@email.com",
+    email: "email6@email.com",
     profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/matt_odell.jpg"
   },
   {
     username: "stephanlivera",
     password: "password",
-    email: "email@email.com",
+    email: "email7@email.com",
     profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/stephanlivera.jpg"
   },
   {
     username: "joerogan",
     password: "password",
-    email: "email@email.com",
+    email: "email8@email.com",
     profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/joerogan.jpeg"
   },
   {
     username: "EricRWeinstein",
     password: "password",
-    email: "email@email.com",
+    email: "email9@email.com",
     profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/EricRWeinstein.jpg"
   },
   {
     username: "NickSzabo4",
     password: "password",
-    email: "email@email.com",
+    email: "email11@email.com",
     profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/NickSzabo4.jpg"
   },
   {
     username: "lopp",
     password: "password",
-    email: "email@email.com",
+    email: "email22@email.com",
     profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/lopp.jpg"
   },
   {
     username: "TuurDemeester",
     password: "password",
-    email: "email@email.com",
+    email: "email33@email.com",
     profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/TuurDemeester.png"
   },
   {
     username: "naval",
     password: "password",
-    email: "email@email.com",
+    email: "email44@email.com",
     profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/naval.png"
   },
   {
     username: "brady",
     password: "password",
-    email: "email@email.com",
+    email: "email55@email.com",
     profilePic: "https://rekr-profile-pics.sfo2.digitaloceanspaces.com/brady.png"
   }
 ]
