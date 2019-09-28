@@ -38,10 +38,10 @@ class Twitter {
             if (error) {
               reject(error);
             } else {
-              const { id_str, screen_name, profile_image_url } = data;
               try {
+                const { id_str, screen_name, profile_image_url } = data;
                 if (id != "null") {
-                  const user = await this.updateCanTweet(id);
+                  const user = await this.updateCanTweet({ id, id_str, accessToken, accessTokenSecret });
                   resolve({ id: user.id, signIn: false })
                 } else {
                   let user = await User.findOne({ where: { twitterId: id_str }});
@@ -74,7 +74,7 @@ class Twitter {
     });
   };
 
-  async updateCanTweet(id) {
+  async updateCanTweet({ id, id_str, accessToken, accessTokenSecret }) {
     const DB = require("../models");
     const User = DB.user;
     const user = await User.findByPk(id);
