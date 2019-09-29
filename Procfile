@@ -1,1 +1,1 @@
-node src/index.js
+sudo node src/index.js
