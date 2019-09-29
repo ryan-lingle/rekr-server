@@ -3,17 +3,25 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'hello@rekr.app',
-    pass: 'Tyryky13'
+    user: process.env.EMAIL,
+    pass: process.env.EMAIL_PASSWORD
   }
 });
 
+function buildEmail({ email, subject, body }) {
+  return {
+    from: process.env.EMAIL,
+    to: process.env.NODE_ENV === "production" ? email : process.env.TEST_EMAIL,
+    subject: subject,
+    html: body
+  }
+}
+
 async function sendUserEmail({ username, email, token }) {
-  const mailOptions = {
-    from: 'hello@rekr.com',
-    to: 'lingleryan@gmail.com',
+  const mailOptions = buildEmail({
+    email,
     subject: 'Confirm Your Email',
-    html: `<div>
+    body: `<div>
              Hello ${username}!
              <br></br>
              <br></br>
@@ -28,17 +36,15 @@ async function sendUserEmail({ username, email, token }) {
              <br></br>
              The Rekr Team
            </div>`
-  };
-
+  });
   sendEmail(mailOptions);
 }
 
 async function sendPasswordEmail({ username, email, token }) {
-  const mailOptions = {
-    from: 'hello@rekr.com',
-    to: 'lingleryan@gmail.com',
+  const mailOptions = buildEmail({
+    email,
     subject: 'Reset your Password',
-    html: `<div>
+    body: `<div>
              Hello ${username}!
              <br></br>
              <br></br>
@@ -52,16 +58,15 @@ async function sendPasswordEmail({ username, email, token }) {
              <br></br>
              The Rekr Team
            </div>`
-  };
+  });
   sendEmail(mailOptions);
 }
 
 async function sendPodcastEmail({ title, email, token }) {
-  const mailOptions = {
-    from: 'hello@rekr.com',
-    to: 'lingleryan@gmail.com',
+  const mailOptions = buildEmail({
+    email,
     subject: 'Start Receiving Podcast Donations!',
-    html: `<div>
+    body: `<div>
              Hello ${title} Admin!
              <br></br>
              <br></br>
@@ -76,7 +81,7 @@ async function sendPodcastEmail({ title, email, token }) {
              <br></br>
              The Rekr Team
            </div>`
-  };
+  });
   sendEmail(mailOptions);
 }
 
