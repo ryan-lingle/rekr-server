@@ -157,6 +157,7 @@ module.exports = (sequelize, DataTypes) => {
     this.monthValueGenerated = this.monthValueGenerated + newSats;
     await this.save();
     inOneMonth(() => {
+      console.log("UPDATED VALUE GENERATED")
       this.monthValueGenerated = this.monthValueGenerated - newSats;
       this.save();
     });

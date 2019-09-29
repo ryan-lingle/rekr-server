@@ -8,7 +8,7 @@ function oneMonthFromNow() {
   const hours = rn.getHours();
   const day = rn.getDate();
   const month = rn.getMonth();
-  return `${seconds} ${minutes + 1} ${hours} ${day} ${month + 1} *`;
+  return `${seconds} ${minutes + 2} ${hours} ${day} ${month + 1} *`;
 }
 
 async function inOneMonth(doThis) {

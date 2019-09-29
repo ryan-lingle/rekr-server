@@ -230,7 +230,6 @@ async function createReks() {
         episodeId: episode.id,
         satoshis: sats,
         userId: user.id,
-        valueGenerated: sats
       }
 
       const rek = await Rek.create(rekOptions);
