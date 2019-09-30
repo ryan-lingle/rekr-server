@@ -1,5 +1,5 @@
 const Parser = require('rss-parser');
-const { everyHour } = require('./scheduler');
+const { everyMinute } = require('./scheduler');
 
 module.exports = class RssFeed {
   constructor(rssUrl) {
@@ -14,7 +14,7 @@ module.exports = class RssFeed {
   }
 
   async subscribe(callback) {
-    everyHour(async () => {
+    everyMinute(async () => {
       const { items } = await this.rssParser.parseURL(this.url);
       const episodes = this.episodeReducer(items);
       callback(episodes);

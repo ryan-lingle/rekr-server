@@ -156,11 +156,10 @@ module.exports = (sequelize, DataTypes) => {
     this.valueGenerated = this.valueGenerated + newSats;
     this.monthValueGenerated = this.monthValueGenerated + newSats;
     await this.save();
-    inOneMonth(() => {
-      console.log("UPDATED VALUE GENERATED")
-      this.monthValueGenerated = this.monthValueGenerated - newSats;
-      this.save();
-    });
+
+    // set monthValueGenerate to get deducted in 1 month
+    const RekUpdate = sequelize.models.rek_update;
+    await RekUpdate.create({ rekId: this.id, satoshis: newSats });
   }
 
   async function updateValueGenerated(rek) {

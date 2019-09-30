@@ -1,4 +1,4 @@
-module.exports = function rssUpdater() {
+module.exports = function() {
   const DB = require('../models');
   const RssFeed = require('../datasources/rss_feed');
 

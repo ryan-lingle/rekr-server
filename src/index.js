@@ -19,9 +19,10 @@ const Jwt = require("./auth/jwt");
 
 const app = express();
 
-const rssUpdater = require('./jobs/rss_updater');
+const { rssUpdater, valueGeneratedUpdater } = require('./jobs');
 
 rssUpdater();
+valueGeneratedUpdater();
 
 const server = new ApolloServer({
   context: async ({ req, connection }) => {
