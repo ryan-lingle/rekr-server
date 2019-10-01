@@ -1,5 +1,26 @@
 /*
 
+- set user with 400 sats
+- create podcast from rss feed
+- confirm podcaster email (?)
+- set guest share to 20%
+- tag 2 guests for episode 1
+- create 800 sat for that episode
+- ensure guests get right amount
+- ensure podcaster gets right amount
+- have another user create a similar rek after viewing the first
+- ensure first user gets appropriate influencer award
+- ensure valueGenerated gets allocated right
+
+
+
+
+
+
+
+
+
+
 - signUp:
   - username validation
   - twitter sign up
