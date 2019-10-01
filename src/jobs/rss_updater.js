@@ -12,8 +12,8 @@ module.exports = function() {
         const latestEpisodeDate = await podcast.latestEpisodeDate;
         console.log(`${podcast.title} - ${latestEpisodeDate}`);
         let episode = episodes.shift();
+        console.log(`${episode.title} - ${episode.released}`);
         while (episode.released > latestEpisodeDate) {
-          console.log(`${episode.title} - ${episode.released}`);
           Episode.create({
             podcastId: podcast.id, title: episode.title,
             description: episode.description, released: episode.released
