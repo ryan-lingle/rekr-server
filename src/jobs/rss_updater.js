@@ -7,12 +7,13 @@ module.exports = function() {
 
   const podcasts = Podcast.findAll().then(podcasts => {
     podcasts.forEach(podcast => {
-      console.log(podcast.title);
       const feed = new RssFeed(podcast.rss);
       feed.subscribe(async (episodes) => {
         const latestEpisodeDate = await podcast.latestEpisodeDate;
+        console.log(`${podcast.title} - ${latestEpisodeDate}`);
         let episode = episodes.shift();
         while (episode.released > latestEpisodeDate) {
+          console.log(`${episode.title} - ${episode.released}`);
           Episode.create({
             podcastId: podcast.id, title: episode.title,
             description: episode.description, released: episode.released
