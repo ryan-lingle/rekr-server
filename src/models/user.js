@@ -179,7 +179,7 @@ module.exports = (sequelize, DataTypes) => {
       INNER JOIN user_follows ON reks."userId" = user_follows."followeeId"
       WHERE user_follows."followerId" = ${this.id}
       OR reks."userId" = ${this.id} AND user_follows."followerId" = ${aFollowerId}
-      ORDER BY CASE WHEN reks.id NOT IN (${viewedRekIds.join(",") || 0}) THEN 0 ELSE 1 END, reks."valueGenerated" DESC
+      ORDER BY CASE WHEN reks.id NOT IN (${viewedRekIds.join(",") || 0}) THEN 0 ELSE 1 END, reks."monthValueGenerated" DESC
       OFFSET ${offset}
       LIMIT 10;
     `, { model: Rek });

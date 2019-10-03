@@ -198,7 +198,7 @@ module.exports = (sequelize, DataTypes) => {
     const episode = await rek.getEpisode();
     const podcast = await episode.getPodcast();
     const status = `I just donated ${rek.satoshis} Satoshis to ${episode.title} (${podcast.title}) on Rekr. ${process.env.CLIENT_DOMAIN}/episode/${episode.id}?rekId=${rek.id}&saveRek=1`;
-    const twitter = new Twitter();
+    const twitter = new Twitter({ write: true });
     twitter.composeTweet({ status, id: rek.userId });
   }
 

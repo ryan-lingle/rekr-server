@@ -253,12 +253,13 @@ const typeDefs = gql`
     createEpisodes(episodes: [EpisodeInput], podcastId: String!): [Episode] @authenticate
     createUser(email: String!, username: String!, password: String!, passwordCopy: String!, rekId: String): LogInResponse!
     updateUser(email: String, username: String, password: String, profilePic: Upload, bio: String): User! @authenticate
+    deleteUser: Boolean! @authenticate
     logIn(username: String!, password: String!): LogInResponse!
     confirmEmail(token: String!): EmailVerification!
     resendUserEmail: Boolean!
     resendPodcastEmail(podcastId: String!): Boolean!
-    twitterToken: String!
-    twitterAccessToken(requestToken: String!, oathVerifier: String!): TwitterResponse!
+    twitterToken(write: Boolean!): String!
+    twitterAccessToken(write: Boolean!, requestToken: String!, oathVerifier: String!): TwitterResponse!
     guestShare(percentage: Float!, podcastId: String!): Boolean! @authenticate
     tagGuest(userIds: [String!], episodeIds: [String!], podcastId: String!): Boolean! @authenticate
     resetPasswordRequest(email: String!): String!

@@ -377,6 +377,11 @@ module.exports = {
         }
       }
     },
+    deleteUser: async (_, { DB, id }) => {
+      const User = DB.user;
+      await User.destroy({ where: { id }});
+      return true;
+    },
     createPodcast: async ({ title,rss,description,email,website,image }, { dataSources, DB }) => {
       const { ListenNotes, RssFeed } = dataSources;
       const Podcast = DB.podcast;
@@ -462,11 +467,13 @@ module.exports = {
       await sendPodcastEmail(podcast);
       return true
     },
-    twitterToken: async (_, __, { dataSources: { Twitter } }) => {
-      return await Twitter.requestToken();
+    twitterToken: async (_, { write }, { dataSources: { Twitter } }) => {
+      const twitter = new Twitter({ write });
+      return await twitter.requestToken();
     },
     twitterAccessToken: async (_, args, { dataSources: { Twitter }, id }) => {
-      return await Twitter.accessToken({ ...args, id });
+      const twitter = new Twitter({ write: args.write });
+      return await twitter.accessToken({ ...args, id });
     },
     guestShare: async ({ percentage, podcastId }, { DB, id }) => {
       const Podcast = DB.podcast;

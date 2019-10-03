@@ -47,7 +47,7 @@ const server = new ApolloServer({
     RssFeed,
     Lightning,
     Images,
-    Twitter: new Twitter(),
+    Twitter,
     Itunes: new ItunesApi(),
     ListenNotes: new ListenNotes(),
   })

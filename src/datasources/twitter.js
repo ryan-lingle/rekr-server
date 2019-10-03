@@ -1,11 +1,13 @@
 const twitterAPI = require('node-twitter-api');
 const Jwt = require("../auth/jwt");
 class Twitter {
-  constructor() {
+  constructor({ write=false }) {
+    this.write = write;
     this.twitter = new twitterAPI({
       consumerKey: process.env.TWITTER_KEY,
       consumerSecret: process.env.TWITTER_SECRET,
-      callback: process.env.CLIENT_DOMAIN + "/auth/twitter/callback"
+      callback: process.env.CLIENT_DOMAIN + "/auth/twitter/callback" + (write ? "/write" : "/read"),
+      x_auth_access_type: write ? "write" : "read"
     });
   }
 
@@ -51,7 +53,7 @@ class Twitter {
                     twitterSecret: accessTokenSecret,
                     username: screen_name,
                     profilePic: profile_image_url,
-                    canTweet: true,
+                    canTweet: this.write,
                     emailVerified: true
                   });
                   const token = Jwt.sign(user.id.toString());
@@ -81,7 +83,7 @@ class Twitter {
     user.twitterId = id_str;
     user.twitterKey = accessToken;
     user.twitterSecret = accessTokenSecret;
-    user.canTweet = true;
+    user.canTweet = this.write;
     await user.save();
     return user;
   }
