@@ -84,6 +84,7 @@ const typeDefs = gql`
   type Podcast {
     id: ID
     title: String
+    satoshis: Int!
     rss: String
     description: String
     email: String
@@ -243,7 +244,7 @@ const typeDefs = gql`
   type Mutation {
     parsePodcast(rssUrl: String!): Podcast! @authenticate
     deposit(satoshis: Int!): Invoice! @authenticate
-    withdraw(invoice: String!): WithdrawResponse! @authenticate
+    withdraw(invoice: String!, podcastId: String): WithdrawResponse! @authenticate
     toggleFollow(followeeId: String, hashtagId: String, type: String): Boolean! @authenticate
     createRekView(rekId: Int!): RekView! @authenticate
     createBookmark(episodeId: String!, rekId: String): BookmarkResponse! @authenticate

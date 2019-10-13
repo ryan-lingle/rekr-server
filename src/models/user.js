@@ -2,6 +2,7 @@
 const bcrypt = require("bcrypt");
 const Sequelize = require("sequelize");
 const { sendUserEmail, sendPasswordEmail } = require("../datasources/mailer");
+const { withdraw } = require('../datasources/lnd');
 
 module.exports = (sequelize, DataTypes) => {
   const user = sequelize.define('user', {
@@ -175,7 +176,7 @@ module.exports = (sequelize, DataTypes) => {
     const aFollowerId = _f_.stream[0] ? _f_.stream[0].id : 1;
 
     const stream = await sequelize.query(`
-      SELECT reks.id, reks."episodeId", reks."userId", reks.satoshis FROM reks
+      SELECT reks.id, reks."episodeId", reks."userId", reks."monthValueGenerated", reks.satoshis FROM reks
       INNER JOIN user_follows ON reks."userId" = user_follows."followeeId"
       WHERE user_follows."followerId" = ${this.id}
       OR reks."userId" = ${this.id} AND user_follows."followerId" = ${aFollowerId}
@@ -218,6 +219,15 @@ module.exports = (sequelize, DataTypes) => {
       email: this.email,
       token
     });
+  }
+
+  user.prototype.withdraw = async function(invoice) {
+    const res = await withdraw(invoice, this.satoshis);
+    if (res.success) {
+      this.satoshis = this.satoshis - res.satoshis;
+      await this.save();
+    }
+    return res;
   }
 
   user.search = async function({ term, offset }) {

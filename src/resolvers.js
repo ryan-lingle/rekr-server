@@ -259,15 +259,15 @@ module.exports = {
       });
       return { invoice, satoshis }
     },
-    withdraw: async ({ invoice }, { dataSources, id, DB }) => {
-      const user = await DB.user.findByPk(id);
-      const { withdraw } = dataSources.Lightning;
-      const res = await withdraw(invoice, user.satoshis);
-      if (res.success) {
-        user.satoshis = user.satoshis - res.satoshis;
-        await user.save();
+    withdraw: async ({ invoice, podcastId }, { dataSources, id, DB }) => {
+      if (podcastId) {
+        const podcast = await DB.podcast.findByPk(podcastId);
+        if (podcast.userId != id) throw new Error('Not Authorized');
+        return await podcast.withdraw(invoice);
+      } else {
+        const user = await DB.user.findByPk(id);
+        return await user.withdraw(invoice);
       }
-      return res;
     },
     toggleFollow: async ({ type, ...args}, { DB, id }) => {
       const Model = DB[`${type}_follow`];

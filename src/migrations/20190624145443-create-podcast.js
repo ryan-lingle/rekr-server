@@ -73,6 +73,11 @@ module.exports = {
         type: Sequelize.FLOAT,
         allowNull: false,
         defaultValue: 0
+      },
+      satoshis: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 0
       }
     });
   },

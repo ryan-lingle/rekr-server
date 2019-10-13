@@ -1,7 +1,7 @@
 'use strict';
 const RssFeed = require('../datasources/rss_feed');
 const { sendPodcastEmail } = require("../datasources/mailer");
-
+const { withdraw } = require('../datasources/lnd');
 
 module.exports = (sequelize, DataTypes) => {
   const podcast = sequelize.define('podcast', {
@@ -16,6 +16,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       validate: {
         isEmail: true
+      }
+    },
+    satoshis: {
+      type: DataTypes.INTEGER,
+      validate: {
+        async isPositive(satoshis) {
+          if ((satoshis) < 0) {
+            throw new Error('Not enough funds.')
+          }
+        }
       }
     },
     emailVerified: DataTypes.BOOLEAN,
@@ -106,6 +116,15 @@ module.exports = (sequelize, DataTypes) => {
 
   podcast.prototype.sendEmail = async function() {
     sendPodcastEmail(this);
+  }
+
+  podcast.prototype.withdraw = async function(invoice) {
+    const res = await withdraw(invoice, this.satoshis);
+    if (res.success) {
+      this.satoshis = this.satoshis - res.satoshis;
+      await this.save();
+    }
+    return res;
   }
 
   podcast.search = async function({ term, offset }) {

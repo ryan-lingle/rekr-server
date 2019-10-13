@@ -30,6 +30,8 @@ module.exports = (sequelize, DataTypes) => {
         const RekView = sequelize.models.rek_view;
         const RekRelationship = sequelize.models.rek_relationships;
         const Notification = sequelize.models.notification;
+
+        // 3 percent goes to rekr
         let podcasterPercent = .97;
 
         if (rek.tweetRek) tweetRek(rek);
@@ -47,15 +49,16 @@ module.exports = (sequelize, DataTypes) => {
         });
 
         if (views.length > 0) {
+          // 10 percent to rek influencers
           podcasterPercent = .87;
           await Promise.all(views.map(async view => {
             // update parent rek
             const parentRek = await view.getRek();
 
-            // build new relationships
+            // build new relationships for rek tree
             await RekRelationship.create({ parentRekId: parentRek.id, childRekId: rek.id });
 
-            // pay out og rekr
+            // pay rek influencer
             const rekr = await parentRek.getUser();
             const reward = Math.floor(rek.satoshis * (.1 / views.length));
             rekr.satoshis = rekr.satoshis + reward;
@@ -71,24 +74,26 @@ module.exports = (sequelize, DataTypes) => {
             });
           }));
 
+          // update value generated's for rek tree
           updateValueGenerated(rek);
         }
         const episode = await rek.getEpisode();
         const guests = await episode.getGuests();
         const podcast = await episode.getPodcast();
 
+        // update guest satoshis if applicable
         if (guests.length > 0) {
           const guestPercent = podcasterPercent * podcast.guestShare;
           guests.forEach(guest => {
             guest.satoshis = guest.satoshis + Math.floor(rek.satoshis * (guestPercent / guests.length));
             guest.save();
           })
+
           podcasterPercent = podcasterPercent - guestPercent;
         }
 
-        const podcaster = await podcast.getUser();
-        podcaster.satoshis = podcaster.satoshis + Math.floor(rek.satoshis * podcasterPercent);
-        podcaster.save();
+        podcast.satoshis = podcast.satoshis + Math.floor(rek.satoshis * podcasterPercent);
+        podcast.save();
       }
     }
   });

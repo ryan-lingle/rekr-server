@@ -49,11 +49,11 @@ async function subscribeInvoice(invoice, callback) {
   }
 }
 
-async function withdraw(request, userSatoshis) {
+async function withdraw(request, satoshis) {
   const { is_expired, tokens } = await decodePaymentRequest({ lnd, request });
   if (is_expired) {
     throw new Error('The invoice you supplied was expired.');
-  } else if (tokens > userSatoshis) {
+  } else if (tokens > satoshis) {
     throw new Error('Insufficient Funds');
   } else {
     try {
