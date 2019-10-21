@@ -62,7 +62,7 @@ async function sendPasswordEmail({ username, email, token }) {
   sendEmail(mailOptions);
 }
 
-async function sendPodcastEmail({ title, email, token }) {
+async function sendPodcastEmail({ title, email, token, satoshis }) {
   const mailOptions = buildEmail({
     email,
     subject: 'Start Receiving Podcast Donations!',
@@ -70,8 +70,9 @@ async function sendPodcastEmail({ title, email, token }) {
              Hello ${title} Admin!
              <br></br>
              <br></br>
-             Before you can start receiving donations for your episodes we are going to do need
-             to verify your email address:
+             ${satoshis > 0 ?
+              `Verify your email address to start receiving donations and to claim an initial <strong>${satoshis.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0})} sats</strong> in donations!`
+              : 'Before you can start receiving donations for your episodes we are going to do need to verify your email address:'}
              <br></br>
              <br></br>
              <a href="${process.env.CLIENT_DOMAIN}/confirm_email/${token}" >Verify Your Email Address</a>

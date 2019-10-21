@@ -116,6 +116,7 @@ const typeDefs = gql`
   type EmailVerification {
     user: User
     podcast: Podcast
+    loggedIn: Boolean
   }
 
   type Hashtag {
@@ -235,7 +236,7 @@ const typeDefs = gql`
     reks(n: Int!, userId: String, feed: Boolean): RekStream!
     users(n: Int!, userId: String, followers: Boolean, following: Boolean): UserStream!
     bookmarks(n: Int!, userId: String): BookmarkStream!
-    podcast(slug: String, id: String): Podcast!
+    podcast(slug: String, id: String, token: String): Podcast!
     hashtag(name: String): Hashtag!
     hashtagFeed(name: String, n: Int!): RekStream!
     notifications(n: Int!): NotificationStream! @authenticate
@@ -259,8 +260,8 @@ const typeDefs = gql`
     confirmEmail(token: String!): EmailVerification!
     resendUserEmail: Boolean!
     resendPodcastEmail(podcastId: String!): Boolean!
-    twitterToken(write: Boolean!): String!
-    twitterAccessToken(write: Boolean!, requestToken: String!, oathVerifier: String!): TwitterResponse!
+    twitterToken: String!
+    twitterAccessToken(requestToken: String!, oathVerifier: String!): TwitterResponse!
     guestShare(percentage: Float!, podcastId: String!): Boolean! @authenticate
     tagGuest(userIds: [String!], episodeIds: [String!], podcastId: String!): Boolean! @authenticate
     resetPasswordRequest(email: String!): String!

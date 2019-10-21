@@ -199,13 +199,9 @@ async function createPodcast(podcast) {
   console.log(`Creating Podcast at ${podcast.rss}`)
   const feed = new RssFeed(podcast.rss);
   const {title, description, rss, email, website, image, episodes } = await feed.toPodcast();
-  console.log(podcast.owner)
-  const owner = await User.findOne({ where: { username: podcast.owner }});
-  const userId = owner.id;
-
   const _podcast_ = await Podcast.create({
     title, description, rss, email,
-    website, image, userId
+    website, image
   });
 
   console.log('Creating Episodes')

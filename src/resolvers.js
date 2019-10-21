@@ -431,24 +431,26 @@ module.exports = {
       const User = DB.user;
       const Podcast = DB.podcast;
 
-      const user = await User.findOne({ where: { token }});
-      if (user) {
-        user.emailVerified = true;
-        await user.save();
-        return { user };
-      }
-
       const podcast = await Podcast.findOne({ where: { token }});
+      console.log(id);
+
       if (podcast) {
         if (id != "null") {
           const user = await User.findByPk(id);
           podcast.userId = user.id;
           podcast.emailVerified = true;
           await podcast.save();
-          return { podcast };
+          return { podcast, loggedIn: true  };
         } else {
-          throw new Error("NOT_LOGGED_IN");
+          return { podcast, loggedIn: false }
         }
+      }
+
+      const user = await User.findOne({ where: { token }});
+      if (user) {
+        user.emailVerified = true;
+        await user.save();
+        return { user, loggedIn: true };
       }
     },
     resendUserEmail: async (_, __, { id, DB }) => {
@@ -467,12 +469,12 @@ module.exports = {
       await sendPodcastEmail(podcast);
       return true
     },
-    twitterToken: async (_, { write }, { dataSources: { Twitter } }) => {
-      const twitter = new Twitter({ write });
+    twitterToken: async (_, __, { dataSources: { Twitter } }) => {
+      const twitter = new Twitter();
       return await twitter.requestToken();
     },
     twitterAccessToken: async (_, args, { dataSources: { Twitter }, id }) => {
-      const twitter = new Twitter({ write: args.write });
+      const twitter = new Twitter();
       return await twitter.accessToken({ ...args, id });
     },
     guestShare: async ({ percentage, podcastId }, { DB, id }) => {
