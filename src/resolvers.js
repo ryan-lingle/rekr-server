@@ -216,6 +216,7 @@ module.exports = {
     },
     user: async  (_, args, { DB }) => {
       const User = DB.user;
+      args.deactivated = false;
       const user = await User.findOne({ where: args });
       return user;
     },
@@ -379,7 +380,8 @@ module.exports = {
     },
     deleteUser: async (_, { DB, id }) => {
       const User = DB.user;
-      await User.destroy({ where: { id }});
+      const user = await User.findByPk(id);
+      await user.deactivate();
       return true;
     },
     createPodcast: async ({ title,rss,description,email,website,image }, { dataSources, DB }) => {
@@ -432,13 +434,13 @@ module.exports = {
       const Podcast = DB.podcast;
 
       const podcast = await Podcast.findOne({ where: { token }});
-      console.log(id);
 
       if (podcast) {
         if (id != "null") {
           const user = await User.findByPk(id);
           podcast.userId = user.id;
           podcast.emailVerified = true;
+          podcast.setToken();
           await podcast.save();
           return { podcast, loggedIn: true  };
         } else {

@@ -82,6 +82,7 @@ module.exports = (sequelize, DataTypes) => {
     twitterSecret: DataTypes.STRING,
     canTweet: DataTypes.BOOLEAN,
     passwordToken: DataTypes.STRING,
+    deactivated: DataTypes.BOOLEAN,
   }, {
     getterMethods: {
       followers: async function() {
@@ -126,10 +127,8 @@ module.exports = (sequelize, DataTypes) => {
       beforeDestroy: async function(user) {
         const Podcast = sequelize.models.podcast;
         const Rek = sequelize.models.rek;
-
         await Podcast.destroy({ where: { userId: user.id }, individualHooks: true })
         await Rek.destroy({ where: { userId: user.id }, individualHooks: true })
-
       }
     }
   });
@@ -228,6 +227,33 @@ module.exports = (sequelize, DataTypes) => {
       await this.save();
     }
     return res;
+  }
+
+  user.prototype.deactivate = async function() {
+    const Rek = sequelize.models.rek;
+    const Bookmark = sequelize.models.bookmark;
+    const RekView = sequelize.models.rek_view;
+    const Notfication = sequelize.models.notification;
+    const UserFollow = sequelize.models.user_follow;
+    const HashtagFollow = sequelize.models.hashtag_follow;
+    const GuestTag = sequelize.models.guest_tag;
+
+    const podcasts = await this.getPodcasts();
+    podcasts.forEach(podcast => {
+      podcast.userId = null;
+      podcast.save();
+    })
+
+    await Bookmark.destroy({ where: { userId: this.id }});
+    await RekView.destroy({ where: { userId: this.id }});
+    await Bookmark.destroy({ where: { userId: this.id }});
+    await UserFollow.destroy({ where: { followeeId: this.id }});
+    await UserFollow.destroy({ where: { followerId: this.id }});
+    await HashtagFollow.destroy({ where: { followerId: this.id }});
+    await GuestTag.destroy({ where: { userId: this.id }});
+
+    this.deactivated = true;
+    await this.save();
   }
 
   user.search = async function({ term, offset }) {

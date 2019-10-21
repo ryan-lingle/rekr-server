@@ -80,7 +80,7 @@ module.exports = (sequelize, DataTypes) => {
     hooks: {
       beforeCreate: async function(podcast) {
         podcast.slug = slugify(podcast.title);
-        podcast.token = Math.random().toString(36).substr(2);
+        podcast.setToken();
       },
 
       beforeDestroy: async function(podcast) {
@@ -125,6 +125,10 @@ module.exports = (sequelize, DataTypes) => {
       await this.save();
     }
     return res;
+  }
+
+  podcast.prototype.setToken = async function() {
+    this.token = Math.random().toString(36).substr(2);
   }
 
   podcast.search = async function({ term, offset }) {
