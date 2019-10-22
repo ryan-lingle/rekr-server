@@ -143,7 +143,7 @@ const typeDefs = gql`
     id: ID
     user: User!
     notifier: User!
-    rek: Rek!
+    rek: Rek
     type: String!
     satoshis: Int
   }
@@ -186,6 +186,7 @@ const typeDefs = gql`
   type InvoicePaid {
     userId: Int!
     invoice: String!
+    rekId: Int
   }
 
   type SearchResults {
@@ -230,7 +231,7 @@ const typeDefs = gql`
   type Query {
     currentUser: User! @authenticate
     user(username: String!): User!
-    episode(id: Int!): Episode!
+    episode(id: String !): Episode!
     episodeShow(episodeId: String!, rekId: String): EpisodeShow!
     search(term: String!, type: String!, n: Int): SearchResults
     reks(n: Int!, userId: String, feed: Boolean): RekStream!
@@ -250,7 +251,7 @@ const typeDefs = gql`
     createRekView(rekId: Int!): RekView! @authenticate
     createBookmark(episodeId: String!, rekId: String): BookmarkResponse! @authenticate
     destroyBookmark(episodeId: String!, rekId: String): BookmarkResponse! @authenticate
-    createRek(episodeId: String!, tweetRek: Boolean!, tags: [TagInput], walletSatoshis: Int, invoiceSatoshis: Int): Invoice! @authenticate
+    createRek(episodeId: String!, tags: [TagInput], walletSatoshis: Int, invoiceSatoshis: Int): Invoice! @authenticate
     createPodcast(title: String, rss: String, description: String, email: String, website: String, image: String): Podcast! @authenticate
     createEpisodes(episodes: [EpisodeInput], podcastId: String!): [Episode] @authenticate
     createUser(email: String!, username: String!, password: String!, passwordCopy: String!, rekId: String): LogInResponse!

@@ -35,8 +35,7 @@ module.exports = {
             tableName: 'reks',
           },
           key: 'id'
-        },
-        allowNull: false
+        }
       },
       type: {
         type: Sequelize.STRING,

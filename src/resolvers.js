@@ -283,7 +283,7 @@ module.exports = {
         return false;
       }
     },
-    createRek: async ({ episodeId, tweetRek, tags, walletSatoshis = 0, invoiceSatoshis = 0 }, { DB, dataSources, id }) => {
+    createRek: async ({ episodeId, tags, walletSatoshis = 0, invoiceSatoshis = 0 }, { DB, dataSources, id }) => {
       const Rek = DB.rek;
       const User = DB.user;
       const { getInvoice } = dataSources.Lightning;
@@ -291,7 +291,6 @@ module.exports = {
 
       const rek = Rek.build({
         episodeId,
-        tweetRek,
         userId: id,
       });
       await rek.validateTags(tags);
@@ -308,7 +307,7 @@ module.exports = {
           await rek.save();
           await rek.addTags(tags);
 
-          pubsub.publish('INVOICE_PAID', { userId: id, invoice })
+          pubsub.publish('INVOICE_PAID', { userId: id, rekId: rek.id, invoice })
         });
       } else {
         user.satoshis = user.satoshis - walletSatoshis;
@@ -420,7 +419,7 @@ module.exports = {
         const Notification = DB.notification;
         const Rek = DB.rek;
         const rek = await Rek.findByPk(rekId);
-        Notification.create({ userId: rek.userId, rekId: rek.id, notifierId: id, type: "bookmark" })
+        Notification.create({ userId: rek.userId, rekId: rek.id, notifierId: id, type: "bookmark" });
       }
       return { bookmarkExists: true, bookmark }
     },

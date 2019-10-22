@@ -20,7 +20,6 @@ module.exports = (sequelize, DataTypes) => {
     valueGenerated: DataTypes.INTEGER,
     monthValueGenerated: DataTypes.INTEGER,
     invoiceId: DataTypes.TEXT,
-    tweetRek: DataTypes.BOOLEAN
   }, {
     hooks: {
       afterCreate: async function(rek) {
@@ -33,8 +32,6 @@ module.exports = (sequelize, DataTypes) => {
 
         // 3 percent goes to rekr
         let podcasterPercent = .97;
-
-        if (rek.tweetRek) tweetRek(rek);
 
         const views = await RekView.findAll({
           where: {
@@ -197,14 +194,6 @@ module.exports = (sequelize, DataTypes) => {
         parseTree(childTree, coefficients, ratio / childTree.parents.length);
       }
     });
-  }
-
-  async function tweetRek(rek) {
-    const episode = await rek.getEpisode();
-    const podcast = await episode.getPodcast();
-    const status = `I just donated ${rek.satoshis} Satoshis to ${episode.title} (${podcast.title}) on Rekr. ${process.env.CLIENT_DOMAIN}/episode/${episode.id}?rekId=${rek.id}&saveRek=1`;
-    const twitter = new Twitter({ write: true });
-    twitter.composeTweet({ status, id: rek.userId });
   }
 
   async function whiteListCharacters(name) {

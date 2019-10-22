@@ -23,7 +23,14 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     }
-  }, {});
+  }, {
+    hooks: {
+      afterCreate: async function(user_follow) {
+        const Notification = sequelize.models.notification;
+        Notification.create({ userId: user_follow.followeeId, notifierId: user_follow.followerId, type: "follow" });
+      }
+    }
+  });
 
   user_follow.associate = function(models) {
     // associations can be defined here
