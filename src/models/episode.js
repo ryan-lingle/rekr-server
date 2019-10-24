@@ -45,7 +45,6 @@ module.exports = (sequelize, DataTypes) => {
         FROM ${this.tableName}
         INNER JOIN podcasts ON podcasts.id = episodes."podcastId"
         WHERE episodes._search @@ plainto_tsquery('english', :term)
-        AND podcasts."emailVerified" = true
         LIMIT 50
         OFFSET :offset;
       `, {
@@ -58,7 +57,6 @@ module.exports = (sequelize, DataTypes) => {
         FROM ${this.tableName}
         INNER JOIN podcasts ON podcasts.id = episodes."podcastId"
         WHERE episodes._search @@ to_tsquery('english', :term)
-        AND podcasts."emailVerified" = true
         LIMIT 50
         OFFSET :offset;
       `, {
