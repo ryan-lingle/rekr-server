@@ -41,7 +41,8 @@ module.exports = (sequelize, DataTypes) => {
     const split = term.split(' ');
     if (split.length > 1) {
       return await sequelize.query(`
-        SELECT episodes.title, episodes."podcastId", episodes.id
+        SELECT episodes.title, episodes."podcastId", episodes.id,
+        ts_rank(episodes._search, plainto_tsquery('english', :term)) as rank
         FROM ${this.tableName}
         INNER JOIN podcasts ON podcasts.id = episodes."podcastId"
         WHERE episodes._search @@ plainto_tsquery('english', :term)
@@ -53,7 +54,8 @@ module.exports = (sequelize, DataTypes) => {
       });
     } else {
       return await sequelize.query(`
-        SELECT episodes.title, episodes."podcastId", episodes.id
+        SELECT episodes.title, episodes."podcastId", episodes.id,
+        ts_rank(episodes._search, to_tsquery('english', :term)) as rank
         FROM ${this.tableName}
         INNER JOIN podcasts ON podcasts.id = episodes."podcastId"
         WHERE episodes._search @@ to_tsquery('english', :term)

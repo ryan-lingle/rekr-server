@@ -181,6 +181,7 @@ const typeDefs = gql`
   type Invoice {
     satoshis: Int
     invoice: String
+    rekId: Int
   }
 
   type InvoicePaid {

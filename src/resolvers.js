@@ -257,6 +257,7 @@ module.exports = {
       const invoice = await getInvoice(satoshis, async (invoice) => {
         user.satoshis += satoshis;
         await user.save();
+        pubsub.publish('INVOICE_PAID', { userId: user.id, invoice })
       });
       return { invoice, satoshis }
     },
@@ -318,7 +319,7 @@ module.exports = {
         await rek.addTags(tags);
       }
 
-      return { invoice, satoshis: invoiceSatoshis }
+      return { invoice, satoshis: invoiceSatoshis, rekId: rek.id }
     },
     createRekView: async ({ rekId }, { DB, id }) => {
       const RekView = DB.rek_view;
