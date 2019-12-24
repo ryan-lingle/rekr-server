@@ -75,12 +75,12 @@ httpServer.listen(process.env.PORT, () => {
   console.log(`🚀 Subscriptions ready at ws://localhost:${process.env.PORT}${server.subscriptionsPath}`);
 });
 
-const Rollbar = require("rollbar");
-const rollbar = new Rollbar({
-  accessToken: '5826c0ce0cee42f18b5e705ece852051',
-  captureUncaught: true,
-  captureUnhandledRejections: true
-});
+if (process.env.NODE_ENV !== "development") {
+  const Rollbar = require("rollbar");
+  const rollbar = new Rollbar({
+    accessToken: '5826c0ce0cee42f18b5e705ece852051',
+    captureUncaught: true,
+    captureUnhandledRejections: true
+  });
+};
 
-// record a generic message and send it to Rollbar
-rollbar.log("Hello world!");

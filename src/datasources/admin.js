@@ -16,6 +16,7 @@ async function adminData({ query }) {
   const { t } = query;
   const date = ts[t];
   const DB = require('../models');
+  nrek
   const Sequelize = DB.sequelize;
   const fees = await Sequelize.query(`SELECT sum(fee) FROM reks WHERE "createdAt" > '${date}';`);
   const users = await Sequelize.query(`SELECT count(*), sum(satoshis) FROM users WHERE "createdAt" > '${date}';`);
