@@ -20,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
     valueGenerated: DataTypes.INTEGER,
     monthValueGenerated: DataTypes.INTEGER,
     invoiceId: DataTypes.TEXT,
+    fee: DataTypes.INTEGER,
   }, {
     hooks: {
       afterCreate: async function(rek) {
@@ -31,6 +32,9 @@ module.exports = (sequelize, DataTypes) => {
         const Notification = sequelize.models.notification;
 
         // 3 percent goes to rekr
+        const fee = Math.floor(rek.satoshis * .03);
+        rek.fee = fee;
+        rek.save();
         let podcasterPercent = .97;
 
         const views = await RekView.findAll({
@@ -61,6 +65,13 @@ module.exports = (sequelize, DataTypes) => {
             rekr.satoshis = rekr.satoshis + reward;
             rekr.save();
 
+            // ADD INFLUENCE TO REK DATA HERE
+            await rek.createRecipient({
+              userId: rekr.id,
+              satoshis: reward,
+              reason: "influenced rek"
+            });
+
             // create notification
             Notification.create({
               notifierId: rek.userId,
@@ -82,15 +93,27 @@ module.exports = (sequelize, DataTypes) => {
         if (guests.length > 0) {
           const guestPercent = podcasterPercent * podcast.guestShare;
           guests.forEach(guest => {
-            guest.satoshis = guest.satoshis + Math.floor(rek.satoshis * (guestPercent / guests.length));
+            const guestSats = Math.floor(rek.satoshis * (guestPercent / guests.length));
+            guest.satoshis = guest.satoshis + guestSats;
             guest.save();
+            rek.createRecipient({
+              userId: guest.id,
+              satoshis: guestSats,
+              reason: "guest share"
+            });
           })
 
           podcasterPercent = podcasterPercent - guestPercent;
         }
 
-        podcast.satoshis = podcast.satoshis + Math.floor(rek.satoshis * podcasterPercent);
+        const podcastSats = Math.floor(rek.satoshis * podcasterPercent);
+        podcast.satoshis = podcast.satoshis + podcastSats;
         podcast.save();
+        rek.createRecipient({
+          podcastId: podcast.id,
+          satoshis: podcastSats,
+          reason: "donation",
+        });
       }
     }
   });
@@ -98,6 +121,7 @@ module.exports = (sequelize, DataTypes) => {
     rek.belongsTo(models.user);
     rek.belongsTo(models.episode);
     rek.hasMany(models.rek_view);
+    rek.hasMany(models.recipient);
 
     rek.belongsToMany(rek, {
       through: models.rek_relationships,

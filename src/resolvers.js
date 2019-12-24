@@ -89,12 +89,23 @@ module.exports = {
       const rek = await Rek.findByPk(parent.id);
       return await rek.getChildren();
     },
-    hashtags: async (parent, _, { DB }) => {
+    hashtags: async (parent) => {
       return await parent.getHashtags();
+    },
+    recipients: async (parent) => {
+      return await parent.getRecipients();
+    }
+  },
+  Recipient: {
+    user: async (parent) => {
+      return parent.getUser();
+    },
+    podcast: async (parent) => {
+      return parent.getPodcast();
     },
   },
   Hashtag: {
-    reks: async (parent, _, { DB }) => {
+    reks: async (parent) => {
       const reks = await parent.getReks();
       return { stream: reks }
     },

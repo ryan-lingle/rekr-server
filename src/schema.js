@@ -111,6 +111,15 @@ const typeDefs = gql`
     valueGenerated: Int!
     monthValueGenerated: Int!
     hashtags: [Hashtag]
+    recipients: [Recipient]
+    fee: Int
+  }
+
+  type Recipient {
+    user: User
+    podcast: Podcast
+    satoshis: Int!
+    reason: String!
   }
 
   type EmailVerification {
@@ -232,7 +241,7 @@ const typeDefs = gql`
   type Query {
     currentUser: User! @authenticate
     user(username: String!): User!
-    episode(id: String !): Episode!
+    episode(id: String!): Episode!
     episodeShow(episodeId: String!, rekId: String): EpisodeShow!
     search(term: String!, type: String!, n: Int): SearchResults
     reks(n: Int!, userId: String, feed: Boolean): RekStream!
