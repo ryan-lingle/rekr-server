@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 function buildEmail({ email, subject, body }) {
   return {
     from: process.env.EMAIL,
-    to: process.env.NODE_ENV === "production" ? email : process.env.TEST_EMAIL,
+    to: process.env.NODE_ENV !== "development" ? email : process.env.TEST_EMAIL,
     subject: subject,
     html: body
   }
