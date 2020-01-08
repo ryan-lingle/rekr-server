@@ -28,7 +28,7 @@ module.exports = {
         },
         allowNull: false
       },
-      valueGenerated: {
+      allTimeValueGenerated: {
         type: Sequelize.INTEGER,
         allowNull: false,
         defaultValue: 0,
@@ -38,8 +38,17 @@ module.exports = {
         allowNull: false,
         defaultValue: 0,
       },
+      weekValueGenerated: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      fee: {
+        type: Sequelize.INTEGER,
+      },
       satoshis: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false,
       },
       invoice: {
         type: Sequelize.TEXT

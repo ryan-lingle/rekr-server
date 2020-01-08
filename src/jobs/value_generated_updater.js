@@ -11,7 +11,7 @@ module.exports = function() {
     `, { model: RekUpdate });
     rek_updates.forEach(async rek_update => {
       const rek = await rek_update.getRek();
-      rek.monthValueGenerated = rek.monthValueGenerated - rek_update.satoshis;
+      rek[`${rek_update.timePeriod}ValueGenerated`] = rek[`${rek_update.timePeriod}ValueGenerated`] - rek_update.satoshis;
       rek.save();
       rek_update.destroy();
     });

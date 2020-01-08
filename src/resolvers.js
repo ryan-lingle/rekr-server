@@ -182,12 +182,12 @@ module.exports = {
         return { stream, more };
       }
     },
-    reks: async (_, { n, userId, feed }, { DB, id }) => {
+    reks: async (_, { n, userId, feed, timePeriod }, { DB, id }) => {
       const offset = n ? n * 10 : 0;
       if (feed) {
         const User = DB.user;
         const user = await User.findByPk(id);
-        return await user.getFeed({ offset });
+        return await user.getFeed({ timePeriod, offset });
       } else {
         const Rek = DB.rek;
         const stream = await Rek.findAll({ where: { userId }, order: [['id', 'DESC']], offset, limit: 10, });
@@ -207,11 +207,11 @@ module.exports = {
       const Hashtag = DB.hashtag;
       return await Hashtag.findOne({ where: args });
     },
-    hashtagFeed: async (_, { name, n }, { DB }) => {
+    hashtagFeed: async (_, { name, n, timePeriod }, { DB }) => {
       const Hashtag = DB.hashtag;
       const hashtag = await Hashtag.findOne({ where: { name } });
       const offset = n ? n * 10 : 0;
-      return await hashtag.getFeed({ offset });
+      return await hashtag.getFeed({ timePeriod, offset });
     },
     notifications: async ({ n }, { DB, id }) => {
       const User = DB.user;

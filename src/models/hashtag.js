@@ -63,8 +63,8 @@ module.exports = (sequelize, DataTypes) => {
     };
   }
 
-  hashtag.prototype.getFeed = async function({ offset }) {
-    const stream = await this.getReks({ limit: 10, offset, order: [['valueGenerated', 'DESC']] })
+  hashtag.prototype.getFeed = async function({ timePeriod, offset }) {
+    const stream = await this.getReks({ limit: 10, offset, order: [[`${timePeriod}ValueGenerated`, 'DESC']] })
     const more = stream.length == 10;
     return { stream, more }
   }

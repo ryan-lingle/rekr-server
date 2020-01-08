@@ -22,6 +22,10 @@ module.exports = {
         allowNull: false,
         type: Sequelize.INTEGER
       },
+      timePeriod: {
+        allowNull: false,
+        type: Sequelize.STRING
+      },
       removeAt: {
         allowNull: false,
         type: Sequelize.DATE

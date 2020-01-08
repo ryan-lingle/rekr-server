@@ -108,8 +108,9 @@ const typeDefs = gql`
     episode: Episode!
     satoshis: Int!
     invoice: String
-    valueGenerated: Int!
+    allTimeValueGenerated: Int!
     monthValueGenerated: Int!
+    weekValueGenerated: Int!
     hashtags: [Hashtag]
     recipients: [Recipient]
     fee: Int
@@ -244,12 +245,12 @@ const typeDefs = gql`
     episode(id: String!): Episode!
     episodeShow(episodeId: String!, rekId: String): EpisodeShow!
     search(term: String!, type: String!, n: Int): SearchResults
-    reks(n: Int!, userId: String, feed: Boolean): RekStream!
+    reks(n: Int!, userId: String, feed: Boolean, timePeriod: String): RekStream!
     users(n: Int!, userId: String, followers: Boolean, following: Boolean): UserStream!
     bookmarks(n: Int!, userId: String): BookmarkStream!
     podcast(slug: String, id: String, token: String): Podcast!
     hashtag(name: String): Hashtag!
-    hashtagFeed(name: String, n: Int!): RekStream!
+    hashtagFeed(name: String, n: Int!, timePeriod: String!): RekStream!
     notifications(n: Int!): NotificationStream! @authenticate
   }
 

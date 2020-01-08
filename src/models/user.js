@@ -163,7 +163,7 @@ module.exports = (sequelize, DataTypes) => {
     });
   };
 
-  user.prototype.getFeed = async function({ offset }) {
+  user.prototype.getFeed = async function({ timePeriod, offset }) {
     const Rek = sequelize.models.rek;
     const RekView = sequelize.models.rek_view;
     const { Op } = Sequelize;
@@ -175,14 +175,19 @@ module.exports = (sequelize, DataTypes) => {
     const aFollowerId = _f_.stream[0] ? _f_.stream[0].id : 1;
 
     const stream = await sequelize.query(`
-      SELECT reks.id, reks."episodeId", reks."userId", reks."monthValueGenerated", reks.satoshis FROM reks
+      SELECT reks.id, reks."episodeId", reks."userId", reks."allTimeValueGenerated", reks."monthValueGenerated", reks."weekValueGenerated", reks.satoshis FROM reks
       INNER JOIN user_follows ON reks."userId" = user_follows."followeeId"
       WHERE user_follows."followerId" = ${this.id}
       OR reks."userId" = ${this.id} AND user_follows."followerId" = ${aFollowerId}
-      ORDER BY CASE WHEN reks.id NOT IN (${viewedRekIds.join(",") || 0}) THEN 0 ELSE 1 END, reks."monthValueGenerated" DESC
+      ORDER BY reks."${timePeriod}ValueGenerated" DESC
       OFFSET ${offset}
       LIMIT 10;
     `, { model: Rek });
+
+    /*
+      code to sort by viewed/not viewed:
+        CASE WHEN reks.id NOT IN (${viewedRekIds.join(",") || 0}) THEN 0 ELSE 1 END,
+    */
 
     const len = stream.length;
     const more = len == 10;
