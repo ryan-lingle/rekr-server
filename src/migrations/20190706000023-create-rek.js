@@ -28,7 +28,7 @@ module.exports = {
         },
         allowNull: false
       },
-      allTimeValueGenerated: {
+      centuryValueGenerated: {
         type: Sequelize.INTEGER,
         allowNull: false,
         defaultValue: 0,

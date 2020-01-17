@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     invoice: DataTypes.TEXT,
-    allTimeValueGenerated: DataTypes.INTEGER,
+    centuryValueGenerated: DataTypes.INTEGER,
     monthValueGenerated: DataTypes.INTEGER,
     weekValueGenerated: DataTypes.INTEGER,
     invoiceId: DataTypes.TEXT,
@@ -180,7 +180,7 @@ module.exports = (sequelize, DataTypes) => {
   };
 
   rek.prototype.increaseValueGenerated = async function (newSats) {
-    this.allTimeValueGenerated = this.allTimeValueGenerated + newSats;
+    this.centuryValueGenerated = this.centuryValueGenerated + newSats;
     this.monthValueGenerated = this.monthValueGenerated + newSats;
     this.weekValueGenerated = this.weekValueGenerated + newSats;
     await this.save();

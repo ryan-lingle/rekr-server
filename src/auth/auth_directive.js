@@ -26,8 +26,8 @@ class AuthenticationDirective extends SchemaDirectiveVisitor {
 class AuthorizationDirective extends SchemaDirectiveVisitor {
   visitFieldDefinition(field) {
     const { resolve } = field;
-    field.resolve = async function (src, args, { id, ...context }, info) {
-      if (src.id == id || src.userId == id) {
+    field.resolve = async function (src, args, { id, token, ...context }, info) {
+      if ((src.id == id || src.userId == id) && Jwt.verify(token, id)) {
         if (resolve) return await resolve.call(null, src, {id, ...context});
         return src[info.fieldName];
       }

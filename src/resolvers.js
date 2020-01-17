@@ -1,6 +1,6 @@
 const { GraphQLScalarType } = require('graphql');
 const { Kind } = require('graphql/language');
-const { AuthenticationError } = require('apollo-server-express');
+const { AuthenticationError, ValidationError } = require('apollo-server-express');
 const Jwt = require("./auth/jwt")
 const { pubsub } = require('./pubsub');
 const { sendUserEmail, sendPodcastEmail } = require('./datasources/mailer');

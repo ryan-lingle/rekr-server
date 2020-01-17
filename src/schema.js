@@ -108,7 +108,7 @@ const typeDefs = gql`
     episode: Episode!
     satoshis: Int!
     invoice: String
-    allTimeValueGenerated: Int!
+    centuryValueGenerated: Int!
     monthValueGenerated: Int!
     weekValueGenerated: Int!
     hashtags: [Hashtag]
