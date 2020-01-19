@@ -1,6 +1,5 @@
 require('dotenv').config()
 const express = require('express');
-const cors = require('cors');
 const { ApolloServer } = require('apollo-server-express');
 const { createServer } = require('http');
 const typeDefs = require('./schema');
@@ -14,31 +13,26 @@ const ListenNotes = require('./datasources/listen_notes');
 const Lightning = require('./datasources/lnd');
 const Images = require('./datasources/images');
 const Twitter = require('./datasources/twitter');
-const { adminData } = require('./datasources/admin');
-
 const { AuthenticationDirective, AuthorizationDirective } = require('./auth/auth_directive');
 const Jwt = require("./auth/jwt");
+const { adminController } = require("./admin");
 
-const app = express();
-app.use(cors());
-
-app.get("/admin/api", async (req, res) => {
-  const data = await adminData(req);
-  res.set("Access-Control-Allow-Credentials", true);
-  res.send(data);
-});
-
+// start asynchronous jobs
 const { rssUpdater, valueGeneratedUpdater } = require('./jobs');
-
 rssUpdater();
 valueGeneratedUpdater();
+
+const app = express();
+
+// initialize some admin routes (don't forget to setup auth)
+adminController(app);
 
 const server = new ApolloServer({
   context: async ({ req, connection }) => {
     if (connection) {
       const { token, id } = connection.context;
       if (!Jwt.verify(token, id)) {
-        throw new AuthenticationError("AUTH")
+        throw new AuthenticationError("NOT_AUTHENTICATED")
       }
       return { ...connection.context, DB }
     } else {

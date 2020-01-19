@@ -1,6 +1,6 @@
 const { GraphQLScalarType } = require('graphql');
 const { Kind } = require('graphql/language');
-const { AuthenticationError, ValidationError } = require('apollo-server-express');
+const { AuthenticationError, UserInputError, ForbiddenError } = require('apollo-server-express');
 const Jwt = require("./auth/jwt")
 const { pubsub } = require('./pubsub');
 const { sendUserEmail, sendPodcastEmail } = require('./datasources/mailer');
@@ -275,7 +275,7 @@ module.exports = {
     withdraw: async ({ invoice, podcastId }, { dataSources, id, DB }) => {
       if (podcastId) {
         const podcast = await DB.podcast.findByPk(podcastId);
-        if (podcast.userId != id) throw new Error('Not Authorized');
+        if (podcast.userId != id) throw new ForbiddenError("NOT_AUTHORIZED");
         return await podcast.withdraw(invoice);
       } else {
         const user = await DB.user.findByPk(id);
@@ -352,7 +352,7 @@ module.exports = {
       return user;
     },
     createUser: async (_, { email, username, password, passwordCopy, rekId }, { DB }) => {
-      if (password !== passwordCopy) throw new Error('Passwords do not match.');
+      if (password !== passwordCopy) throw new UserInputError('Passwords do not match.');
 
       const User = DB.user;
       const RekView = DB.rek_view;
@@ -374,9 +374,9 @@ module.exports = {
       const User = DB.user;
       const user = await User.findOne({ where: { username }});
       if (!user) {
-        throw new Error('Invalid Username or Password.');
+        throw new UserInputError('Invalid Username or Password.');
       } else if (!await user.validPassword(password)) {
-        throw new Error('Invalid Username or Password.');
+        throw new UserInputError('Invalid Username or Password.');
       } else {
         const id = user.id;
         const hasPodcast = await user.hasPodcast;
@@ -401,16 +401,12 @@ module.exports = {
       const Episode = DB.episode;
 
       const itunesId = await ListenNotes.itunesIdByRss(rss) || null;
-      if (!itunesId) throw new Error('This does not seem to be a Itunes verified RSS Feed.');
+      if (!itunesId) throw new UserInputError('This does not seem to be a Itunes verified RSS Feed.');
       const podcasts = await Podcast.findOrCreate({ where: {
         title, description, rss, email,
         website, image, itunesId
       }});
-      if (podcasts[0].emailVerified) {
-        throw new Error('This podcast has already been claimed.')
-      } else {
-        podcasts[0].sendEmail();
-      }
+      podcasts[0].sendEmail();
       return podcasts[0];
     },
     createEpisodes: async ({ episodes, podcastId }, { DB }) => {
@@ -473,7 +469,7 @@ module.exports = {
         await sendUserEmail(user);
         return true;
       } else {
-        throw new Error("NOT_LOGGED_IN");
+        throw new AuthenticationError("NOT_AUTHENTICATED");
       }
     },
     resendPodcastEmail: async (_, { podcastId }, { DB }) => {
@@ -493,7 +489,7 @@ module.exports = {
     guestShare: async ({ percentage, podcastId }, { DB, id }) => {
       const Podcast = DB.podcast;
       const podcast = await Podcast.findByPk(podcastId);
-      if (podcast.userId != id) throw new Error('Not Authorized');
+      if (podcast.userId != id) throw new ForbiddenError("NOT_AUTHORIZED");
       podcast.guestShare = percentage;
       await podcast.save();
       return true;
@@ -502,7 +498,7 @@ module.exports = {
       const GuestTag = DB.guest_tag;
       const Podcast = DB.podcast;
       const podcast = await Podcast.findByPk(podcastId);
-      if (podcast.userId != id) throw new Error('Not Authorized');
+      if (podcast.userId != id) throw new ForbiddenError("NOT_AUTHORIZED");
       if (episodeIds.length === 1) {
         await GuestTag.destroy({ where: { episodeId: episodeIds[0] }})
       }
@@ -516,15 +512,15 @@ module.exports = {
     resetPasswordRequest: async (_, { email }, { DB }) => {
       const User = DB.user;
       const user = await User.findOne({ where: { email }});
-      if (!user) throw new Error('No User with that Email.');
+      if (!user) throw new UserInputError('No User with that Email.');
       await user.passwordResetRequest();
       return email;
     },
     resetPassword: async (_, { token, password, passwordCopy }, { DB }) => {
-      if (password !== passwordCopy) throw new Error('Passwords do not match.');
+      if (password !== passwordCopy) throw new UserInputError('Passwords do not match.');
       const User = DB.user;
       const user = await User.findOne({ where: { passwordToken: token }});
-      if (!user) throw new Error('Invalid Link');
+      if (!user) throw new UserInputError('Invalid Link');
       await user.resetPassword(password);
       return true;
     }
