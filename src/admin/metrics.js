@@ -38,7 +38,7 @@ module.exports = (function () {
     const reks = await Sequelize.query(`SELECT count(*), sum(satoshis) FROM reks WHERE "createdAt" > '${date}';`);
     const podcasts = await Sequelize.query(`SELECT count(*), sum(satoshis) FROM podcasts WHERE "createdAt" > '${date}';`);
     const claimedPodcasts = await Sequelize.query(`SELECT count(*) FROM podcasts WHERE podcasts."emailVerified"= true AND "createdAt" > '${date}';`);
-    const errors = await Sequelize.query(`SELECT * FROM errors;`);
+    const errors = await Sequelize.query(`SELECT * FROM errors ORDER BY "createdAt" DESC;`);
 
     return {
       fees: fees[0][0].sum,
