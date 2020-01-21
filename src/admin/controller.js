@@ -9,9 +9,6 @@ module.exports = function adminController(app) {
   app.use(express.json());
 
   app.get("/admin/api", async (req, res) => {
-    console.log(req.headers);
-    console.log("secret:", process.env.ADMIN_SECRET);
-
     if (req.headers.admintoken !== process.env.ADMIN_SECRET)
       res.send(403);
     const data = await adminMetrics(req);
