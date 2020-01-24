@@ -175,7 +175,7 @@ module.exports = (sequelize, DataTypes) => {
     const aFollowerId = _f_.stream[0] ? _f_.stream[0].id : 1;
 
     const stream = await sequelize.query(`
-      SELECT reks.id, reks."episodeId", reks."userId", reks."centuryValueGenerated", reks."monthValueGenerated", reks."weekValueGenerated", reks.satoshis FROM reks
+      SELECT reks.id, reks."episodeId", reks."userId", reks."allTimeValueGenerated", reks."monthValueGenerated", reks."weekValueGenerated", reks.satoshis FROM reks
       INNER JOIN user_follows ON reks."userId" = user_follows."followeeId"
       WHERE user_follows."followerId" = ${this.id}
       OR reks."userId" = ${this.id} AND user_follows."followerId" = ${aFollowerId}

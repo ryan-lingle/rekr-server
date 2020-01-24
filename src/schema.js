@@ -108,7 +108,7 @@ const typeDefs = gql`
     episode: Episode!
     satoshis: Int!
     invoice: String
-    centuryValueGenerated: Int!
+    allTimeValueGenerated: Int!
     monthValueGenerated: Int!
     weekValueGenerated: Int!
     hashtags: [Hashtag]
@@ -255,7 +255,7 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    parsePodcast(rssUrl: String!): Podcast! @authenticate
+    createPodcast(rssUrl: String!): Podcast!
     deposit(satoshis: Int!): Invoice! @authenticate
     withdraw(invoice: String!, podcastId: String): WithdrawResponse! @authenticate
     toggleFollow(followeeId: String, hashtagId: String, type: String): Boolean! @authenticate
@@ -263,7 +263,6 @@ const typeDefs = gql`
     createBookmark(episodeId: String!, rekId: String): BookmarkResponse! @authenticate
     destroyBookmark(episodeId: String!, rekId: String): BookmarkResponse! @authenticate
     createRek(episodeId: String!, tags: [TagInput], walletSatoshis: Int, invoiceSatoshis: Int): Invoice! @authenticate
-    createPodcast(title: String, rss: String, description: String, email: String, website: String, image: String): Podcast! @authenticate
     createEpisodes(episodes: [EpisodeInput], podcastId: String!): [Episode] @authenticate
     createUser(email: String!, username: String!, password: String!, passwordCopy: String!, rekId: String): LogInResponse!
     updateUser(email: String, username: String, password: String, profilePic: Upload, bio: String): User! @authenticate

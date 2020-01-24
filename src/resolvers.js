@@ -187,6 +187,7 @@ module.exports = {
       if (feed) {
         const User = DB.user;
         const user = await User.findByPk(id);
+        if (timePeriod === "all-time") timePeriod = "allTime";
         return await user.getFeed({ timePeriod, offset });
       } else {
         const Rek = DB.rek;
@@ -211,6 +212,7 @@ module.exports = {
       const Hashtag = DB.hashtag;
       const hashtag = await Hashtag.findOne({ where: { name } });
       const offset = n ? n * 10 : 0;
+      if (timePeriod === "all-time") timePeriod = "allTime";
       return await hashtag.getFeed({ timePeriod, offset });
     },
     notifications: async ({ n }, { DB, id }) => {
@@ -257,10 +259,13 @@ module.exports = {
     }
   },
   Mutation: {
-    parsePodcast: async ({ rssUrl }, { dataSources, id }) => {
+    createPodcast: async (_, { rssUrl }, { dataSources, id }) => {
+      console.log(rssUrl);
       const { RssFeed } = dataSources;
       const feed = new RssFeed(rssUrl);
+      console.log(feed);
       return await feed.toPodcast()
+
     },
     deposit: async ({ satoshis }, { dataSources, id, DB }) => {
       const user = await DB.user.findByPk(id);
@@ -395,20 +400,20 @@ module.exports = {
       await user.deactivate();
       return true;
     },
-    createPodcast: async ({ title,rss,description,email,website,image }, { dataSources, DB }) => {
-      const { ListenNotes, RssFeed } = dataSources;
-      const Podcast = DB.podcast;
-      const Episode = DB.episode;
+    // createPodcast: async ({ title,rss,description,email,website,image }, { dataSources, DB }) => {
+    //   const { ListenNotes, RssFeed } = dataSources;
+    //   const Podcast = DB.podcast;
+    //   const Episode = DB.episode;
 
-      const itunesId = await ListenNotes.itunesIdByRss(rss) || null;
-      if (!itunesId) throw new UserInputError('This does not seem to be a Itunes verified RSS Feed.');
-      const podcasts = await Podcast.findOrCreate({ where: {
-        title, description, rss, email,
-        website, image, itunesId
-      }});
-      podcasts[0].sendEmail();
-      return podcasts[0];
-    },
+    //   const itunesId = await ListenNotes.itunesIdByRss(rss) || null;
+    //   if (!itunesId) throw new UserInputError('This does not seem to be a Itunes verified RSS Feed.');
+    //   const podcasts = await Podcast.findOrCreate({ where: {
+    //     title, description, rss, email,
+    //     website, image, itunesId
+    //   }});
+    //   podcasts[0].sendEmail();
+    //   return podcasts[0];
+    // },
     createEpisodes: async ({ episodes, podcastId }, { DB }) => {
       const Episode = DB.episode;
       episodes = await Promise.all(episodes.map(async episode => {
