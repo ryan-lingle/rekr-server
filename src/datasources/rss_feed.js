@@ -9,28 +9,27 @@ module.exports = class RssFeed {
 
   async toPodcast() {
     const feed = await this.rssParser.parseURL(this.url);
-    const podcast = this.podcastReducer(feed);
-    return this.verify(podcast);
+    const [podcast, episodes] = this.podcastReducer(feed);
+    return [this.verify(podcast), episodes];
   }
 
   async subscribe(callback) {
+    const comp = this;
     everyMinute(async () => {
-      const { items } = await this.rssParser.parseURL(this.url);
-      const episodes = this.episodeReducer(items);
-      callback(episodes);
+      const [podcast, episodes] = await comp.toPodcast();
+      callback(podcast, episodes);
     })
   }
 
   podcastReducer(feed) {
-    return {
+    return [{
       title: feed.title,
       rss: this.url,
       description: feed.description,
       email: feed.itunes.owner.email,
       image: feed.itunes.image,
       website: feed.link,
-      episodes: this.episodeReducer(feed.items),
-    }
+    }, this.episodeReducer(feed.items)];
   }
 
   episodeReducer(episodes) {
@@ -45,7 +44,7 @@ module.exports = class RssFeed {
 
   verify(podcast) {
     Object.keys(podcast).forEach(key => {
-      if (key != "episodes" && typeof podcast[key] != "string") {
+      if (typeof podcast[key] != "string") {
         podcast[key] = null;
       }
     })

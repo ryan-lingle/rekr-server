@@ -259,13 +259,14 @@ module.exports = {
     }
   },
   Mutation: {
-    createPodcast: async (_, { rssUrl }, { dataSources, id }) => {
-      console.log(rssUrl);
+    createPodcast: async (_, { rssUrl }, { dataSources, id, DB }) => {
       const { RssFeed } = dataSources;
+      const Podcast = DB.podcast;
       const feed = new RssFeed(rssUrl);
-      console.log(feed);
-      return await feed.toPodcast()
-
+      const [podcastArgs, episodes] = await feed.toPodcast();
+      const [podcast] = await Podcast.findOrCreate({ where: podcastArgs });
+      await podcast.createEpisodes(episodes);
+      return podcast;
     },
     deposit: async ({ satoshis }, { dataSources, id, DB }) => {
       const user = await DB.user.findByPk(id);

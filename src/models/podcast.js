@@ -86,22 +86,6 @@ module.exports = (sequelize, DataTypes) => {
       beforeDestroy: async function(podcast) {
         const Episode = sequelize.models.episode;
         await Episode.destroy({ where: { podcastId: podcast.id }, individualHooks: true })
-      },
-
-      afterCreate: async function(podcast) {
-        const Episode = sequelize.models.episode;
-        const feed = new RssFeed(podcast.rss);
-        feed.subscribe(async (episodes) => {
-          const latestEpisodeDate = await podcast.latestEpisodeDate;
-          let episode = episodes.shift();
-          while (episode.released > latestEpisodeDate) {
-            Episode.create({
-              podcastId: podcast.id, title: episode.title,
-              description: episode.description, released: episode.released
-            });
-            episode = episodes.shift();
-          }
-        })
       }
     }
   });
@@ -129,6 +113,18 @@ module.exports = (sequelize, DataTypes) => {
 
   podcast.prototype.setToken = async function() {
     this.token = Math.random().toString(36).substr(2);
+  }
+
+  podcast.prototype.createEpisodes = async function(episodes) {
+    const Episode = sequelize.models.episode;
+    episodes = await Promise.all(episodes.map(async args => {
+      const [episode] = await Episode.findOrCreate({ where: {
+        podcastId: this.id, title: args.title,
+        description: args.description, released: args.released
+      }});
+      return episode;
+    }));
+    return episodes.flat();
   }
 
   podcast.search = async function({ term, offset }) {

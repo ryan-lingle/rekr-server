@@ -198,19 +198,11 @@ async function createPodcasts() {
 async function createPodcast(podcast) {
   console.log(`Creating Podcast at ${podcast.rss}`)
   const feed = new RssFeed(podcast.rss);
-  const {title, description, rss, email, website, image, episodes } = await feed.toPodcast();
-  const _podcast_ = await Podcast.create({
-    title, description, rss, email,
-    website, image
-  });
+  const [podcastArgs, episodeArgs] = await feed.toPodcast();
+  const _podcast_ = await Podcast.create(podcastArgs);
 
-  console.log('Creating Episodes')
-  for (const episode of episodes) {
-    await Episode.create({
-      podcastId: _podcast_.id, title: episode.title,
-      description: episode.description, released: episode.released
-    })
-  }
+  console.log('Creating Episodes');
+  _podcast_.createEpisodes(episodeArgs);
 }
 
 async function createReks() {

@@ -8,7 +8,8 @@ module.exports = function() {
   const podcasts = Podcast.findAll().then(podcasts => {
     podcasts.forEach(podcast => {
       const feed = new RssFeed(podcast.rss);
-      feed.subscribe(async (episodes) => {
+      feed.subscribe(async (podcastArgs, episodes) => {
+        await Podcast.update(podcastArgs, { where: { id: podcast.id }});
         const latestEpisodeDate = await podcast.latestEpisodeDate;
         console.log(`${podcast.title} - ${latestEpisodeDate}`);
         let episode = episodes.shift();
