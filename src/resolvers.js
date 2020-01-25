@@ -136,6 +136,10 @@ module.exports = {
     hashtag: async (parent, _, { DB }) => {
       const Hashtag = DB.hashtag;
       return await Hashtag.findByPk(parent.hashtagId);
+    },
+    user: async (parent, _, { DB }) => {
+      const User = DB.user;
+      return await User.findByPk(parent.followerId);
     }
   },
   Notification: {
