@@ -30,7 +30,6 @@ module.exports = (sequelize, DataTypes) => {
         const Rek = sequelize.models.rek;
         const RekView = sequelize.models.rek_view;
         const RekRelationship = sequelize.models.rek_relationships;
-        const Notification = sequelize.models.notification;
 
         // 3 percent goes to rekr
         const fee = Math.floor(rek.satoshis * .03);
@@ -52,40 +51,15 @@ module.exports = (sequelize, DataTypes) => {
 
         if (views.length > 0) {
           // 10 percent to rek influencers
-          podcasterPercent = .87;
           await Promise.all(views.map(async view => {
             // update parent rek
             const parentRek = await view.getRek();
 
             // build new relationships for rek tree
             await RekRelationship.create({ parentRekId: parentRek.id, childRekId: rek.id });
-
-            // pay rek influencer
-            const rekr = await parentRek.getUser();
-            const reward = Math.floor(rek.satoshis * (.1 / views.length));
-            rekr.satoshis = rekr.satoshis + reward;
-            rekr.save();
-
-            // ADD INFLUENCE TO REK DATA HERE
-            await rek.createRecipient({
-              userId: rekr.id,
-              satoshis: reward,
-              reason: "influenced rek"
-            });
-
-            // create notification
-            Notification.create({
-              notifierId: rek.userId,
-              userId: rekr.id,
-              rekId: parentRek.id,
-              type: "rek",
-              satoshis: reward
-            });
           }));
-
-          // update value generated's for rek tree
-          updateValueGenerated(rek);
         }
+
         const episode = await rek.getEpisode();
         const guests = await episode.getGuests();
         const podcast = await episode.getPodcast();
@@ -118,6 +92,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     }
   });
+
   rek.associate = function(models) {
     rek.belongsTo(models.user);
     rek.belongsTo(models.episode);
@@ -169,60 +144,6 @@ module.exports = (sequelize, DataTypes) => {
     return self.indexOf(value) === index;
   }
 
-  rek.prototype.tree = async function() {
-    const parents = await this.getParents();
-    const trees = await Promise.all(parents.map(async c => await c.tree()));
-    const res = {};
-    return {
-      id: this.id,
-      parents: trees
-    }
-  };
-
-  rek.prototype.increaseValueGenerated = async function (newSats) {
-    this.allTimeValueGenerated = this.allTimeValueGenerated + newSats;
-    this.monthValueGenerated = this.monthValueGenerated + newSats;
-    this.weekValueGenerated = this.weekValueGenerated + newSats;
-    await this.save();
-
-    // set monthValueGenerate to get deducted in 1 month
-    const RekUpdate = sequelize.models.rek_update;
-    await RekUpdate.create({ rekId: this.id, satoshis: newSats, timePeriod: "month"});
-    await RekUpdate.create({ rekId: this.id, satoshis: newSats, timePeriod: "week"});
-  }
-
-  async function updateValueGenerated(rek) {
-    const tree = await rek.tree();
-    const coefficients = {};
-    if (tree.parents.length > 0) {
-      parseTree(tree, coefficients, 1 / tree.parents.length);
-      allocateValue(rek.satoshis, coefficients)
-    }
-  }
-
-  function allocateValue(satoshis, coefficients) {
-    const Rek = sequelize.models.rek;
-    Object.keys(coefficients).forEach(id => {
-      Rek.findByPk(id).then(rek => {
-        const val = Math.floor(satoshis * coefficients[id]);
-        rek.increaseValueGenerated(val);
-      })
-    })
-  }
-
-  function parseTree(tree, coefficients, ratio) {
-    tree.parents.forEach(childTree => {
-      if (coefficients[childTree.id]) {
-        coefficients[childTree.id] += ratio;
-      } else {
-        coefficients[childTree.id] = ratio;
-      }
-      if (childTree.parents.length > 0) {
-        parseTree(childTree, coefficients, ratio / childTree.parents.length);
-      }
-    });
-  }
-
   async function whiteListCharacters(name) {
     const whitelisted = "qwertyuiopasdfghjklzxcvbnm_-1234567890$"
     name.split('').forEach(s => {
@@ -231,6 +152,63 @@ module.exports = (sequelize, DataTypes) => {
       }
     })
   }
+
+
+  // CURRENTLY UNUSED AFFILIATE SYSTEM CODE
+
+  // rek.prototype.tree = async function() {
+  //   const parents = await this.getParents();
+  //   const trees = await Promise.all(parents.map(async c => await c.tree()));
+  //   const res = {};
+  //   return {
+  //     id: this.id,
+  //     parents: trees
+  //   }
+  // };
+
+  // rek.prototype.increaseValueGenerated = async function (newSats) {
+  //   this.allTimeValueGenerated = this.allTimeValueGenerated + newSats;
+  //   this.monthValueGenerated = this.monthValueGenerated + newSats;
+  //   this.weekValueGenerated = this.weekValueGenerated + newSats;
+  //   await this.save();
+
+  //   // set monthValueGenerate to get deducted in 1 month
+  //   const RekUpdate = sequelize.models.rek_update;
+  //   await RekUpdate.create({ rekId: this.id, satoshis: newSats, timePeriod: "month"});
+  //   await RekUpdate.create({ rekId: this.id, satoshis: newSats, timePeriod: "week"});
+  // }
+
+  // async function updateValueGenerated(rek) {
+  //   const tree = await rek.tree();
+  //   const coefficients = {};
+  //   if (tree.parents.length > 0) {
+  //     parseTree(tree, coefficients, 1 / tree.parents.length);
+  //     allocateValue(rek.satoshis, coefficients)
+  //   }
+  // }
+
+  // function allocateValue(satoshis, coefficients) {
+  //   const Rek = sequelize.models.rek;
+  //   Object.keys(coefficients).forEach(id => {
+  //     Rek.findByPk(id).then(rek => {
+  //       const val = Math.floor(satoshis * coefficients[id]);
+  //       rek.increaseValueGenerated(val);
+  //     })
+  //   })
+  // }
+
+  // function parseTree(tree, coefficients, ratio) {
+  //   tree.parents.forEach(childTree => {
+  //     if (coefficients[childTree.id]) {
+  //       coefficients[childTree.id] += ratio;
+  //     } else {
+  //       coefficients[childTree.id] = ratio;
+  //     }
+  //     if (childTree.parents.length > 0) {
+  //       parseTree(childTree, coefficients, ratio / childTree.parents.length);
+  //     }
+  //   });
+  // }
 
   return rek;
 };
