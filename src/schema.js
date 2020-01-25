@@ -30,6 +30,12 @@ const typeDefs = gql`
     count: Int!
   }
 
+  type EpisodeDonationStream {
+    more: Boolean
+    stream: [EpisodeDonations]
+    count: Int!
+  }
+
   type PodcastStream {
     more: Boolean
     stream: [Podcast]
@@ -108,12 +114,16 @@ const typeDefs = gql`
     episode: Episode!
     satoshis: Int!
     invoice: String
-    allTimeValueGenerated: Int!
-    monthValueGenerated: Int!
-    weekValueGenerated: Int!
     hashtags: [Hashtag]
     recipients: [Recipient]
     fee: Int
+  }
+
+  type EpisodeDonations {
+    hashtag: Hashtag!
+    satoshis: Int!
+    timePeriod: String!
+    episode: Episode!
   }
 
   type Recipient {
@@ -251,12 +261,12 @@ const typeDefs = gql`
     episode(id: String!): Episode!
     episodeShow(episodeId: String!, rekId: String): EpisodeShow!
     search(term: String!, type: String!, n: Int): SearchResults
-    reks(n: Int!, userId: String, feed: Boolean, timePeriod: String): RekStream!
+    reks(n: Int!, userId: String, feed: Boolean): RekStream!
     users(n: Int!, userId: String, followers: Boolean, following: Boolean): UserStream!
     bookmarks(n: Int!, userId: String): BookmarkStream!
     podcast(slug: String, id: String, token: String): Podcast!
     hashtag(name: String): Hashtag!
-    hashtagFeed(name: String, n: Int!, timePeriod: String!): RekStream!
+    hashtagFeed(name: String, n: Int!, timePeriod: String!): EpisodeDonationStream!
     notifications(n: Int!): NotificationStream! @authenticate
     podcasts(term: String!): [ItunesSearchResults]
   }

@@ -25,8 +25,6 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     hooks: {
       afterCreate: async function(rek) {
-        rek.increaseValueGenerated(rek.satoshis);
-
         const Rek = sequelize.models.rek;
         const RekView = sequelize.models.rek_view;
         const RekRelationship = sequelize.models.rek_relationships;

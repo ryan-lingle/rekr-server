@@ -17,10 +17,3 @@
 //     });
 //   })
 // }
-
-/*
-SELECT title, sum(satoshis) FROM episodes INNER JOIN reks ON reks."episodeId" = episodes.id
-INNER JOIN tags ON reks.id = tags."rekId" INNER JOIN hashtags ON tags."hashtagId" = hashtags.id
-WHERE name = 'bitcoin' AND reks."createdAt" > 'now'::timestamp - '16 hour'::interval
-GROUP BY episodes.title ORDER BY sum(satoshis) DESC;
-*/

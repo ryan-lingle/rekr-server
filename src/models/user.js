@@ -163,7 +163,7 @@ module.exports = (sequelize, DataTypes) => {
     });
   };
 
-  user.prototype.getFeed = async function({ timePeriod, offset }) {
+  user.prototype.getFeed = async function({ offset }) {
     const Rek = sequelize.models.rek;
     const RekView = sequelize.models.rek_view;
     const { Op } = Sequelize;
@@ -175,11 +175,11 @@ module.exports = (sequelize, DataTypes) => {
     const aFollowerId = _f_.stream[0] ? _f_.stream[0].id : 1;
 
     const stream = await sequelize.query(`
-      SELECT reks.id, reks."episodeId", reks."userId", reks."allTimeValueGenerated", reks."monthValueGenerated", reks."weekValueGenerated", reks.satoshis FROM reks
+      SELECT reks.id, reks."episodeId", reks."userId", reks.satoshis FROM reks
       INNER JOIN user_follows ON reks."userId" = user_follows."followeeId"
       WHERE user_follows."followerId" = ${this.id}
       OR reks."userId" = ${this.id} AND user_follows."followerId" = ${aFollowerId}
-      ORDER BY reks."${timePeriod}ValueGenerated" DESC
+      ORDER BY reks."createdAt" DESC
       OFFSET ${offset}
       LIMIT 10;
     `, { model: Rek });

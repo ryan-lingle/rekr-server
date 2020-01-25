@@ -156,6 +156,16 @@ module.exports = {
       return await Rek.findByPk(parent.rekId);
     }
   },
+  EpisodeDonations: {
+    episode: async (parent, _, { DB }) => {
+      const Episode = DB.episode;
+      return await Episode.findByPk(parent.episodeId);
+    },
+    hashtag: async (parent, _, { DB }) => {
+      const Hashtag = DB.hashtag;
+      return await Hashtag.findByPk(parent.hashtagId);
+    },
+  },
   Date: new GraphQLScalarType({
     name: 'Date',
     description: 'Date custom scalar type',
@@ -186,13 +196,12 @@ module.exports = {
         return { stream, more };
       }
     },
-    reks: async (_, { n, userId, feed, timePeriod }, { DB, id }) => {
+    reks: async (_, { n, userId, feed }, { DB, id }) => {
       const offset = n ? n * 10 : 0;
       if (feed) {
         const User = DB.user;
         const user = await User.findByPk(id);
-        if (timePeriod === "all-time") timePeriod = "allTime";
-        return await user.getFeed({ timePeriod, offset });
+        return await user.getFeed({ offset });
       } else {
         const Rek = DB.rek;
         const stream = await Rek.findAll({ where: { userId }, order: [['id', 'DESC']], offset, limit: 10, });
@@ -212,12 +221,11 @@ module.exports = {
       const Hashtag = DB.hashtag;
       return await Hashtag.findOne({ where: args });
     },
-    hashtagFeed: async (_, { name, n, timePeriod }, { DB }) => {
+    hashtagFeed: async (_, { timePeriod, name, n }, { DB }) => {
       const Hashtag = DB.hashtag;
       const hashtag = await Hashtag.findOne({ where: { name } });
       const offset = n ? n * 10 : 0;
-      if (timePeriod === "all-time") timePeriod = "allTime";
-      return await hashtag.getFeed({ timePeriod, offset });
+      return await hashtag.getFeed({ offset, timePeriod });
     },
     notifications: async ({ n }, { DB, id }) => {
       const User = DB.user;
