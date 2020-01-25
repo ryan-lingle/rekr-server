@@ -209,23 +209,22 @@ async function createReks() {
   console.log('Creating Reks')
   const users = await User.findAll();
 
-  for (const user of users) {
-    for (let i=1;i<=15; i++) {
-      const podcast = await Podcast.findOne({ order: db.Sequelize.fn('RANDOM') })
-      const episode = await Episode.findOne({ order: db.Sequelize.fn('RANDOM'), where: { podcastId: podcast.id } })
-      const sats = randomSats();
-      const rekOptions = {
-        episodeId: episode.id,
-        satoshis: sats,
-        userId: user.id,
-      }
-
-      const rek = await Rek.create(rekOptions);
-
-      console.log("adding hashtags")
-      const hashtags = twoHashtags();
-      await rek.addTags(hashtags);
+  for (let i=1;i<=100; i++) {
+    const user = await User.findOne({ order: db.Sequelize.fn('RANDOM') })
+    const podcast = await Podcast.findOne({ order: db.Sequelize.fn('RANDOM') })
+    const episode = await Episode.findOne({ order: db.Sequelize.fn('RANDOM'), where: { podcastId: podcast.id } })
+    const sats = randomSats();
+    const rekOptions = {
+      episodeId: episode.id,
+      satoshis: sats,
+      userId: user.id,
     }
+
+    const rek = await Rek.create(rekOptions);
+
+    console.log("adding hashtags")
+    const hashtags = twoHashtags();
+    await rek.addTags(hashtags);
   }
 
 }
