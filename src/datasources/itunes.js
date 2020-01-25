@@ -4,6 +4,8 @@ module.exports = class ItunesApi extends RESTDataSource {
   constructor() {
     super();
     this.baseURL = 'https://itunes.apple.com';
+    const DB = require('../models');
+    this.Rss = DB.rss;
   }
 
 
@@ -15,12 +17,21 @@ module.exports = class ItunesApi extends RESTDataSource {
   async search({ term }) {
     const txt = await this.get(`search?term=${term}&media=podcast&entity=podcast`);
     const response = JSON.parse(txt)
-    return response
-      ? response.results.map(result => this.resultReducer(result))
-      : [];
+    return this.resultReducer(response.results);
   }
 
-  resultReducer(result) {
-    console.log(result)
+  async saveRss(url) {
+    this.Rss.findOrCreate({ where: { url } });
+  }
+
+  resultReducer(results=[]) {
+    return results.map(item => {
+      this.saveRss(item.feedUrl);
+      return {
+        image: item.artworkUrl600,
+        title: item.collectionName,
+        rss: item.feedUrl
+      };
+    });
   }
 }

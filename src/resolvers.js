@@ -256,6 +256,10 @@ module.exports = {
     podcast: async (_, args, { DB }) => {
       const Podcast = DB.podcast;
       return await Podcast.findOne({ where: args })
+    },
+    podcasts: async (_, { term }, { dataSources }) => {
+      const { Itunes } = dataSources;
+      return await Itunes.search({ term});
     }
   },
   Mutation: {
@@ -265,6 +269,7 @@ module.exports = {
       const feed = new RssFeed(rssUrl);
       const [podcastArgs, episodes] = await feed.toPodcast();
       const [podcast] = await Podcast.findOrCreate({ where: podcastArgs });
+      console.log(podcast.slug)
       await podcast.createEpisodes(episodes);
       return podcast;
     },
@@ -400,30 +405,6 @@ module.exports = {
       const user = await User.findByPk(id);
       await user.deactivate();
       return true;
-    },
-    // createPodcast: async ({ title,rss,description,email,website,image }, { dataSources, DB }) => {
-    //   const { ListenNotes, RssFeed } = dataSources;
-    //   const Podcast = DB.podcast;
-    //   const Episode = DB.episode;
-
-    //   const itunesId = await ListenNotes.itunesIdByRss(rss) || null;
-    //   if (!itunesId) throw new UserInputError('This does not seem to be a Itunes verified RSS Feed.');
-    //   const podcasts = await Podcast.findOrCreate({ where: {
-    //     title, description, rss, email,
-    //     website, image, itunesId
-    //   }});
-    //   podcasts[0].sendEmail();
-    //   return podcasts[0];
-    // },
-    createEpisodes: async ({ episodes, podcastId }, { DB }) => {
-      const Episode = DB.episode;
-      episodes = await Promise.all(episodes.map(async episode => {
-        return await Episode.create({
-          podcastId: podcastId, title: episode.title,
-          description: episode.description, released: episode.released
-        })
-      }));
-      return episodes.flat();
     },
     createBookmark: async ({ episodeId, rekId }, { DB, id }) => {
 

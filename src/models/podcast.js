@@ -155,7 +155,12 @@ module.exports = (sequelize, DataTypes) => {
   }
 
   function slugify(title) {
-    return title.split(" ").join("_").toLowerCase();
+    const whitelisted = "qwertyuiopasdfghjklzxcvbnm1234567890$_"
+    return title.toLowerCase()
+      .split(" ")
+      .join("_")
+      .split("").filter(s => whitelisted.includes(s))
+      .join("");
   }
 
   return podcast;

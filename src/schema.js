@@ -234,6 +234,12 @@ const typeDefs = gql`
     follow: Boolean!
   }
 
+  type ItunesSearchResults {
+    image: String!
+    title: String!
+    rss: String
+  }
+
   type Subscription {
     invoicePaid(invoice: String!): InvoicePaid!
     hashtags: HashtagFollow!
@@ -252,6 +258,7 @@ const typeDefs = gql`
     hashtag(name: String): Hashtag!
     hashtagFeed(name: String, n: Int!, timePeriod: String!): RekStream!
     notifications(n: Int!): NotificationStream! @authenticate
+    podcasts(term: String!): [ItunesSearchResults]
   }
 
   type Mutation {
@@ -263,7 +270,6 @@ const typeDefs = gql`
     createBookmark(episodeId: String!, rekId: String): BookmarkResponse! @authenticate
     destroyBookmark(episodeId: String!, rekId: String): BookmarkResponse! @authenticate
     createRek(episodeId: String!, tags: [TagInput], walletSatoshis: Int, invoiceSatoshis: Int): Invoice! @authenticate
-    createEpisodes(episodes: [EpisodeInput], podcastId: String!): [Episode] @authenticate
     createUser(email: String!, username: String!, password: String!, passwordCopy: String!, rekId: String): LogInResponse!
     updateUser(email: String, username: String, password: String, profilePic: Upload, bio: String): User! @authenticate
     deleteUser: Boolean! @authenticate

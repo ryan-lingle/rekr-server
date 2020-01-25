@@ -49,8 +49,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       description: {
-        type: Sequelize.TEXT,
-        allowNull: false,
+        type: Sequelize.TEXT
       },
       image: {
         type: Sequelize.STRING,

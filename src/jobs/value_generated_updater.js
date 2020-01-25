@@ -1,6 +1,6 @@
 module.exports = function() {
   const DB = require('../models');
-  const { Sequelize, sequelize } = DB;
+  const { sequelize } = DB;
   const RekUpdate = DB.rek_update;
   const { everyMinute } = require('../datasources/scheduler');
   const now = new Date();
