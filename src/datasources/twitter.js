@@ -48,7 +48,7 @@ class Twitter {
                     twitterKey: accessToken,
                     twitterSecret: accessTokenSecret,
                     username: screen_name,
-                    profilePic: profile_image_url_https.replace("_normal", "");,
+                    profilePic: profile_image_url_https.replace("_normal", ""),
                     emailVerified: true
                   });
                 };
