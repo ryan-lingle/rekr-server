@@ -40,7 +40,7 @@ class Twitter {
               reject(error);
             } else {
               try {
-                const { id_str, screen_name, profile_image_url } = data;
+                const { id_str, screen_name, profile_image_url_https } = data;
                 let user = await User.findOne({ where: { twitterId: id_str }});
                 if (!user) {
                   user = await this.createUser({
@@ -48,11 +48,10 @@ class Twitter {
                     twitterKey: accessToken,
                     twitterSecret: accessTokenSecret,
                     username: screen_name,
-                    profilePic: profile_image_url,
+                    profilePic: profile_image_url_https.replace("_normal", "");,
                     emailVerified: true
                   });
                 };
-                console.log(user);
                 const token = Jwt.sign(user.id.toString());
                 const hasPodcast = await user.hasPodcast;
                 resolve({
