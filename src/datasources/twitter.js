@@ -42,14 +42,17 @@ class Twitter {
               try {
                 const { id_str, screen_name, profile_image_url } = data;
                 let user = await User.findOne({ where: { twitterId: id_str }});
-                if (!user) user = await this.createUser({
-                  twitterId: id_str,
-                  twitterKey: accessToken,
-                  twitterSecret: accessTokenSecret,
-                  username: screen_name,
-                  profilePic: profile_image_url,
-                  emailVerified: true
-                });
+                if (!user) {
+                  user = await this.createUser({
+                    twitterId: id_str,
+                    twitterKey: accessToken,
+                    twitterSecret: accessTokenSecret,
+                    username: screen_name,
+                    profilePic: profile_image_url,
+                    emailVerified: true
+                  });
+                };
+                console.log(user);
                 const token = Jwt.sign(user.id.toString());
                 const hasPodcast = await user.hasPodcast;
                 resolve({
