@@ -108,7 +108,7 @@ const typeDefs = gql`
 
   type Rek {
     id: ID
-    user: User!
+    user: User
     parents: [Rek]
     children: [Rek]
     episode: Episode!
@@ -205,7 +205,7 @@ const typeDefs = gql`
   }
 
   type InvoicePaid {
-    userId: Int!
+    userId: Int
     invoice: String!
     rekId: Int
   }
@@ -279,7 +279,7 @@ const typeDefs = gql`
     createRekView(rekId: Int!): RekView! @authenticate
     createBookmark(episodeId: String!, rekId: String): BookmarkResponse! @authenticate
     destroyBookmark(episodeId: String!, rekId: String): BookmarkResponse! @authenticate
-    createRek(episodeId: String!, tags: [TagInput], walletSatoshis: Int, invoiceSatoshis: Int): Invoice! @authenticate
+    createRek(episodeId: String!, tags: [TagInput], walletSatoshis: Int, invoiceSatoshis: Int): Invoice!
     createUser(email: String!, username: String!, password: String!, passwordCopy: String!, rekId: String): LogInResponse!
     updateUser(email: String, username: String, password: String, profilePic: Upload, bio: String): User! @authenticate
     deleteUser: Boolean! @authenticate

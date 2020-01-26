@@ -82,7 +82,7 @@ module.exports = (sequelize, DataTypes) => {
       item.timePeriod = timePeriod;
       return item;
     });
-    console.log(stream);
+
     const len = stream.length;
     const more = len == 10;
     return { stream, more }

@@ -1,6 +1,6 @@
 require('dotenv').config()
 const express = require('express');
-const { ApolloServer } = require('apollo-server-express');
+const { ApolloServer, AuthenticationError } = require('apollo-server-express');
 const { createServer } = require('http');
 const typeDefs = require('./schema');
 
@@ -25,8 +25,8 @@ const server = new ApolloServer({
   context: async ({ req, connection }) => {
     if (connection) {
       const { token, id } = connection.context;
-      if (!Jwt.verify(token, id)) {
-        throw new AuthenticationError("NOT_AUTHENTICATED")
+      if (id && !Jwt.verify(token, id)) {
+        throw new AuthenticationError("UNAUTHENTICATED")
       }
       return { ...connection.context, DB }
     } else {

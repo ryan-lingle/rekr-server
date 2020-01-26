@@ -14,7 +14,7 @@ class AuthenticationDirective extends SchemaDirectiveVisitor {
     const { resolve = defaultFieldResolver } = field;
     field.resolve = async function (src, args, { token, id, DB, ...context }, info) {
       if (!Jwt.verify(token, id)) {
-        throw new AuthenticationError("unauthenticated");
+        throw new AuthenticationError("UNAUTHENTICATED");
       } else {
         const user = await DB.user.findByPk(id);
         if (!user.emailVerified) {

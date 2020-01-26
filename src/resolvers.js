@@ -318,11 +318,12 @@ module.exports = {
         return false;
       }
     },
-    createRek: async ({ episodeId, tags, walletSatoshis = 0, invoiceSatoshis = 0 }, { DB, dataSources, id }) => {
+    createRek: async (_, { episodeId, tags, walletSatoshis = 0, invoiceSatoshis = 0 }, { DB, dataSources, id }) => {
       const Rek = DB.rek;
       const User = DB.user;
       const { getInvoice } = dataSources.Lightning;
-      const user = await User.findByPk(id);
+      if (id === "null") id = null;
+      const user = id ? await User.findByPk(id) : null;
 
       const rek = Rek.build({
         episodeId,
@@ -335,8 +336,10 @@ module.exports = {
         rek.satoshis = invoiceSatoshis + walletSatoshis;
         await rek.validate();
         invoice = await getInvoice(invoiceSatoshis, async (invoice) => {
-          user.satoshis = user.satoshis - walletSatoshis;
-          await user.save();
+          if (user) {
+            user.satoshis = user.satoshis - walletSatoshis;
+            await user.save();
+          };
 
           rek.invoice = invoice;
           await rek.save();
@@ -378,11 +381,16 @@ module.exports = {
       if (password !== passwordCopy) throw new UserInputError('Passwords do not match.');
 
       const User = DB.user;
-      const RekView = DB.rek_view;
+      const Rek = DB.rek;
 
       const user = await User.create({ email, username, password });
 
-      if (rekId) RekView.findOrCreate({ where: { rekId, userId: user.id } });
+      if (rekId) {
+        const rek = await Rek.findByPk(rekId);
+        console.log(rek);
+        rek.userId = user.id;
+        rek.save();
+      };
 
       const id = user.id;
       const hasPodcast = await user.hasPodcast;
@@ -468,7 +476,7 @@ module.exports = {
         await sendUserEmail(user);
         return true;
       } else {
-        throw new AuthenticationError("NOT_AUTHENTICATED");
+        throw new AuthenticationError("UNAUTHENTICATED");
       }
     },
     resendPodcastEmail: async (_, { podcastId }, { DB }) => {
