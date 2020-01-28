@@ -119,7 +119,7 @@ module.exports = (sequelize, DataTypes) => {
     const Episode = sequelize.models.episode;
     episodes = await Promise.all(episodes.map(async args => {
       const [episode] = await Episode.findOrCreate({ where: {
-        podcastId: this.id, title: args.title,
+        podcastId: this.id, title: args.title, content: args.content,
         description: args.description, released: args.released
       }});
       return episode;

@@ -281,7 +281,6 @@ module.exports = {
       const feed = new RssFeed(rssUrl);
       const [podcastArgs, episodes] = await feed.toPodcast();
       const [podcast] = await Podcast.findOrCreate({ where: podcastArgs });
-      console.log(podcast.slug)
       await podcast.createEpisodes(episodes);
       return podcast;
     },
