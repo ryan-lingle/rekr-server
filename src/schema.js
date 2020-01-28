@@ -84,6 +84,7 @@ const typeDefs = gql`
     bookmarked: Boolean
     released: Date
     donationSum: Int
+    content: String
     guests: [User]
   }
 

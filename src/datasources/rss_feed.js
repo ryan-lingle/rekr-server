@@ -38,6 +38,7 @@ module.exports = class RssFeed {
         title: e.title,
         description: e.content,
         released: new Date(e.isoDate),
+        content: e.enclosure.url
       }
     })
   }
