@@ -18,7 +18,7 @@ const Jwt = require("./auth/jwt");
 const { adminController } = require("./admin");
 
 const startJobs = require("./jobs");
-startJobs();
+// startJobs();
 
 const app = express();
 
