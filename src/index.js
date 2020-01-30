@@ -16,6 +16,10 @@ const Twitter = require('./datasources/twitter');
 const { AuthenticationDirective, AuthorizationDirective } = require('./auth/auth_directive');
 const Jwt = require("./auth/jwt");
 const { adminController } = require("./admin");
+
+const startJobs = require("./jobs");
+startJobs();
+
 const app = express();
 
 // initialize some admin routes (don't forget to setup auth)
