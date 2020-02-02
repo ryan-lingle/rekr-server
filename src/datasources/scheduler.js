@@ -6,4 +6,11 @@ async function everyMinute(doThis) {
   });
 };
 
-module.exports = { everyMinute };
+async function everyFifteenMinutes(doThis) {
+  cron.schedule("*/15 * * * *", () =>  {
+    doThis();
+  });
+};
+
+
+module.exports = { everyMinute, everyFifteenMinutes };

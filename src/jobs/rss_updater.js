@@ -16,7 +16,7 @@ module.exports = function() {
         console.log(`${episode.title} - ${episode.released}`);
         while (episode.released > latestEpisodeDate) {
           Episode.create({
-            podcastId: podcast.id, title: episode.title,
+            podcastId: podcast.id, title: episode.title, content: episode.content,
             description: episode.description, released: episode.released
           });
           episode = episodes.shift();
