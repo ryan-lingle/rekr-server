@@ -29,7 +29,9 @@ class Twitter {
     const DB = require("../models");
     const TwitterCredentials = DB.twitter_credentials;
     const User = DB.user;
+    console.log("hi");
     const { token, secret } = await TwitterCredentials.findOne({ where: { token: requestToken }});
+    console.log(token, secret);
     return new Promise((resolve, reject) => {
       this.twitter.getAccessToken(token, secret, oathVerifier, async (error, accessToken, accessTokenSecret, results) => {
         if (error) {
