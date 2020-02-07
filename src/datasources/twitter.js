@@ -26,8 +26,6 @@ class Twitter {
 
   // refactor this shit
   async accessToken({ requestToken, oathVerifier, id }) {
-    console.log(requestToken);
-    console.log(oathVerifier);
     const DB = require("../models");
     const TwitterCredentials = DB.twitter_credentials;
     const User = DB.user;
@@ -35,13 +33,18 @@ class Twitter {
     return new Promise((resolve, reject) => {
       this.twitter.getAccessToken(token, secret, oathVerifier, async (error, accessToken, accessTokenSecret, results) => {
         if (error) {
+          console.log("1:");
+          console.log(error);
           reject(error);
         } else {
           this.twitter.verifyCredentials(accessToken, accessTokenSecret, {}, async (error, data, response) => {
             if (error) {
+              console.log("2:");
+              console.log(error);
               reject(error);
             } else {
               try {
+                console.log(data);
                 const { id_str, screen_name, profile_image_url_https } = data;
                 let user = await User.findOne({ where: { twitterId: id_str }});
                 if (!user) {
@@ -56,6 +59,7 @@ class Twitter {
                 };
                 const token = Jwt.sign(user.id.toString());
                 const hasPodcast = await user.hasPodcast;
+                console.log(user);
                 resolve({
                   id: user.id,
                   signIn: true, token,
@@ -64,6 +68,8 @@ class Twitter {
                   hasPodcast
                 });
               } catch(error) {
+                console.log("3:");
+                console.log(error);
                 reject(error);
               }
             }
