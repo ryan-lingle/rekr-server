@@ -26,6 +26,8 @@ class Twitter {
 
   // refactor this shit
   async accessToken({ requestToken, oathVerifier, id }) {
+    console.log(requestToken);
+    console.log(oathVerifier);
     const DB = require("../models");
     const TwitterCredentials = DB.twitter_credentials;
     const User = DB.user;
