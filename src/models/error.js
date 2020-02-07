@@ -6,7 +6,14 @@ module.exports = (sequelize, DataTypes) => {
     operation: DataTypes.JSON,
     stack: DataTypes.JSON,
     location: DataTypes.STRING,
-  }, {});
+  }, {
+    hooks: {
+      beforeCreate: function(error, options) {
+        console.log(error);
+        console.log(options);
+      }
+    }
+  });
   error.associate = function(models) {
     // associations can be defined here
   };
