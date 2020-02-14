@@ -1,7 +1,7 @@
 # rekr-server
 This is the repo for the rekr server, the rekr client repo can be [found here](https://github.com/ryan-lingle/rekr-client).
 
-A demo for this application (with fake data) can be found at [staging.rekr.app](https://staging.rekr.app) (give the servers a second to wake up).
+This application can be found at [rekr.app](https://rekr.app).
 ## dev setup
 enter rekr-server directory
 ```
