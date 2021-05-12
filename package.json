@@ -30,7 +30,7 @@
     "ln-service": "^40.1.1",
     "node-cron": "^2.0.3",
     "node-twitter-api": "^1.8.0",
-    "nodemailer": "^6.3.0",
+    "nodemailer": "^6.4.16",
     "nodemon": "^1.19.1",
     "pg": "^7.11.0",
     "rollbar": "^2.14.4",
